@@ -8,6 +8,7 @@ function SuccessContent() {
   const searchParams = useSearchParams()
   const sessionId = searchParams.get('session_id')
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
+  const [userName, setUserName] = useState<string>('')
 
   useEffect(() => {
     if (!sessionId) {
@@ -26,22 +27,21 @@ function SuccessContent() {
 
         const userId = currentSession.user.id
 
-        // Idealmente, esto se prefiere hacer vía un Webhook de Stripe en tu backend
-        // o llamando a una API propia. Por ahora, si sabemos que llegaron aquí,
-        // confiaremos en marcar su pago en la DB.
-
-        // En un entorno de producción seguro, haríamos fetch(`/api/verify-checkout?session_id=${sessionId}`)
-        // y que el backend haga esto, pero lo simularemos directamente actualizando la base de datos
-        // asumiendo que el éxito del pago es verdadero por llegar a esta página.
-
-        const { error } = await supabase
+        // Guardamos el pago y traemos el primer nombre del usuario al mismo tiempo
+        const { data: profileData, error } = await supabase
           .from('profiles')
           .update({ payment_date: new Date().toISOString() })
           .eq('id', userId)
+          .select('first_name')
+          .single()
 
         if (error) {
           console.error("Error al guardar el pago:", error)
           throw error
+        }
+
+        if (profileData && profileData.first_name) {
+          setUserName(profileData.first_name)
         }
 
         setStatus('success')
@@ -53,6 +53,11 @@ function SuccessContent() {
 
     verifyPaymentAndUpdateDB()
   }, [sessionId])
+
+  // Coach WhatsApp configuration
+  const COACH_PHONE = "522221903422" // Reemplaza esto con el número real de WhatsApp del Coach
+  const waMessage = encodeURIComponent(`¡Hola Coach! Soy ${userName || 'un nuevo alumno'}, acabo de unirme al programa THE ON3 PERC3NT.`)
+  const whatsappUrl = `https://wa.me/${COACH_PHONE}?text=${waMessage}`
 
   return (
     <div className="min-h-screen noise-bg relative flex flex-col items-center justify-center p-6">
@@ -76,15 +81,20 @@ function SuccessContent() {
             ¡PAGO <span className="text-shimmer">EXITOSO!</span>
           </h1>
           <p className="font-body text-muted-foreground mb-8">
-            Bienvenido al 1%. Tu transformación acaba de comenzar. Tu entrenador se pondrá en contacto pronto.
+            Bienvenido al 1%. Tu transformación acaba de comenzar. Haz clic abajo para enviarle tu referencia al entrenador por WhatsApp.
           </p>
-          <Link
-            href="/"
-            className="block w-full py-4 rounded-xl bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-label text-sm uppercase tracking-[0.2em] font-bold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_-4px_hsl(72_100%_64%/0.4)] active:translate-y-0"
-            style={{ transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }}
-          >
-            VOLVER AL INICIO
-          </Link>
+
+          <div className="flex flex-col gap-4">
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full py-4 tracking-wide rounded-xl bg-[#25D366] text-white font-label text-sm uppercase font-bold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_-4px_rgba(37,211,102,0.4)] active:translate-y-0 text-center"
+              style={{ transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }}
+            >
+              CONTACTAR COACH (WHATSAPP)
+            </a>
+          </div>
         </div>
       )}
 
