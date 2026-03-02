@@ -56,12 +56,13 @@ function SignupContent() {
       return;
     }
 
-    // Redirect to the provided redirect URL (e.g., /pricing) or home
+    // Redirect to the provided redirect URL (e.g., /pricing) or dashboard
     if (redirectParams) {
       router.push(redirectParams);
     } else {
-      router.push("/login?message=Revisa tu correo para confirmar tu cuenta y luego inicia sesión.");
+      router.push("/admin/promos");
     }
+    router.refresh();
   };
 
   return (
