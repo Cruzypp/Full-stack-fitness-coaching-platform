@@ -30,10 +30,14 @@ export async function POST(req: NextRequest) {
     const host = req.headers.get("host");
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (host ? `${protocol}://${host}` : 'http://localhost:3000');
 
+    // Retrieve the price from Stripe to check if it's recurring or one-time
+    const price = await stripe.prices.retrieve(priceId);
+    const mode = price.type === 'recurring' ? 'subscription' : 'payment';
+
     // Create Checkout Session
     const session = await stripe.checkout.sessions.create({
       line_items: lineItems,
-      mode: "payment",
+      mode: mode,
       discounts: discounts,
       client_reference_id: userId, // Attach user ID here
       // URL to redirect on success

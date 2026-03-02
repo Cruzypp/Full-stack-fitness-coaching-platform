@@ -58,7 +58,7 @@ export default function AdminDashboardPage() {
       {/* Nav */}
       <nav className="relative z-10 flex flex-col md:flex-row items-center justify-between px-6 md:px-12 py-5 border-b border-border/10 gap-4 md:gap-0">
         <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-          <span className="font-bebas text-xl md:text-2xl tracking-wide text-foreground">THE ON3 PERC3NT</span>
+          <span className="font-bebas text-xl md:text-2xl tracking-wide text-foreground">THE ON3 P3RCENT</span>
         </Link>
         <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
           <Link href="/admin/promos" className="font-label text-[10px] md:text-xs uppercase tracking-[0.15em] text-muted-foreground hover:text-foreground transition-colors">
@@ -164,7 +164,7 @@ export default function AdminDashboardPage() {
       {/* Footer */}
       <footer className="relative z-10 border-t border-border py-6 text-center mt-auto">
         <span className="font-label text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40">
-          © 2026 ON3 PERC3NT
+          © 2026 ON3 P3RCENT
         </span>
       </footer>
     </div>

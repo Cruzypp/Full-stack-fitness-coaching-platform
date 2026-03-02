@@ -20,6 +20,7 @@ export interface StripePrice {
 export async function getActivePrices(): Promise<StripePrice[]> {
   const prices = await stripe.prices.list({
     active: true,
+    expand: ['data.product']
   });
 
   return prices.data.map(price => ({

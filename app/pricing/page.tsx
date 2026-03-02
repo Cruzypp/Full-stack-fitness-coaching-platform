@@ -5,11 +5,12 @@ import { useRouter } from 'next/navigation'
 import { usePromo } from '@/app/hooks/usePromo'
 import { CountdownTimer } from '@/app/components/CountdownTime'
 import Link from 'next/link'
-import { supabase } from '@/app/lib/connection'
+import { supabase, getActiveStripePriceId } from '@/app/lib/connection'
 
 function PricingContent() {
   const router = useRouter();
   const [prices, setPrices] = useState<any[]>([]);
+  const [activePriceId, setActivePriceId] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
   const [authLoading, setAuthLoading] = useState(true);
 
@@ -40,6 +41,10 @@ function PricingContent() {
       .then(res => res.json())
       .then(data => {
         if (data.prices) setPrices(data.prices);
+        return getActiveStripePriceId();
+      })
+      .then(id => {
+        setActivePriceId(id);
         setPricesLoaded(true);
       })
       .catch(err => {
@@ -48,10 +53,11 @@ function PricingContent() {
       });
   }, []);
 
-  // Extract the first active price and convert from cents to dollars/pesos
+  // Extract the active price and convert from cents to dollars/pesos
   // Default to 0 if no price is active or found
-  const stripePriceAmount = prices.length > 0 && prices[0].unit_amount
-    ? prices[0].unit_amount / 100
+  const activePrice = prices.find(p => p.id === activePriceId) || prices[0];
+  const stripePriceAmount = activePrice && activePrice.unit_amount
+    ? activePrice.unit_amount / 100
     : 0;
 
   const { promo, loading: promoLoading, expired, handleExpired } = usePromo()
@@ -77,7 +83,10 @@ function PricingContent() {
       setIsCheckingOut(true);
 
       if (!user) {
-        const currentUrl = window.location.pathname + window.location.search;
+        let currentUrl = window.location.pathname;
+        if (hasPromo) {
+          currentUrl += `?promo=${promo.code}`;
+        }
         router.push(`/signup?redirect=${encodeURIComponent(currentUrl)}`);
         return;
       }
@@ -114,7 +123,7 @@ function PricingContent() {
       <nav className="relative z-10 flex items-center justify-between px-6 md:px-12 py-5">
         <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
           <span className="font-bebas text-xl tracking-wide text-foreground">
-            THE ON3 PERC3NT
+            THE ON3 P3RCENT
           </span>
         </Link>
         <div className="flex items-center gap-4">
@@ -173,7 +182,7 @@ function PricingContent() {
 
         {/* Pricing Card */}
         <section className="w-full max-w-md mx-auto fade-up" style={{ animationDelay: hasPromo ? '0.3s' : '0.15s' }}>
-          <div className="glass-card rounded-2xl p-8 md:p-10 border border-border/20 relative overflow-hidden">
+          <div className="glass-card rounded-2xl p-8 md:p-10 border border-border/20 relative overflow-hidden transition-all duration-500 hover:border-primary/40 hover:shadow-[0_0_40px_-10px_hsl(72_100%_64%/0.25)]">
             {/* Corner glow */}
             <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-[40px]" />
 
@@ -188,7 +197,7 @@ function PricingContent() {
 
             {/* Plan name */}
             <p className="font-label text-[10px] uppercase tracking-[0.2em] text-muted-foreground/50 mb-4">
-              ELITE COACHING
+              {activePrice?.product?.name ? activePrice.product.name.toUpperCase() : 'ELITE COACHING'}
             </p>
 
             {/* Price */}
@@ -235,8 +244,8 @@ function PricingContent() {
 
             {/* CTA */}
             <button
-              onClick={() => handleCheckout(prices[0]?.id)}
-              disabled={isCheckingOut || prices.length === 0}
+              onClick={() => handleCheckout(activePrice?.id)}
+              disabled={isCheckingOut || !activePrice}
               className="w-full py-4 rounded-xl bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-label text-sm uppercase tracking-[0.2em] font-bold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_-4px_hsl(72_100%_64%/0.4)] active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }}
             >
@@ -253,7 +262,7 @@ function PricingContent() {
       {/* Footer */}
       <footer className="relative z-10 border-t border-border py-6 text-center mt-auto">
         <span className="font-label text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40">
-          © 2026 ON3 PERC3NT
+          © 2026 ON3 P3RCENT
         </span>
       </footer>
     </div>

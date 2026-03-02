@@ -2,8 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { createPromotion } from "../../lib/connection";
-import { supabase } from "../../lib/connection";
+import { createPromotion, supabase, getActiveStripePriceId, updateActiveStripePriceId } from "../../lib/connection";
 import { createStripeCoupon } from "../../actions/promo";
 
 const AdminPromosPage = () => {
@@ -21,19 +20,50 @@ const AdminPromosPage = () => {
   });
 
   const [prices, setPrices] = useState<any[]>([]);
+  const [activePriceId, setActivePriceId] = useState<string>("");
+  const [savingPrice, setSavingPrice] = useState(false);
+  const [priceMsg, setPriceMsg] = useState("");
 
   useEffect(() => {
+    let fetchedPrices: any[] = [];
     fetch('/api/stripe')
       .then(res => res.json())
       .then(data => {
-        if (data.prices) setPrices(data.prices);
+        if (data.prices) {
+          setPrices(data.prices);
+          fetchedPrices = data.prices;
+        }
+        return getActiveStripePriceId();
+      })
+      .then(id => {
+        if (id) {
+          setActivePriceId(id);
+        } else if (fetchedPrices.length > 0) {
+          setActivePriceId(fetchedPrices[0].id);
+        }
       })
       .catch(console.error);
   }, []);
 
-  const stripePriceAmount = prices.length > 0 && prices[0].unit_amount
-    ? prices[0].unit_amount / 100
+  const activePrice = prices.find(p => p.id === activePriceId) || prices[0];
+  const stripePriceAmount = activePrice && activePrice.unit_amount
+    ? activePrice.unit_amount / 100
     : 500; // Default fallback
+
+  const handleSaveActivePrice = async () => {
+    try {
+      setSavingPrice(true);
+      setPriceMsg("");
+      await updateActiveStripePriceId(activePriceId);
+      setPriceMsg("¡Producto activo actualizado!");
+    } catch (err) {
+      setPriceMsg("Error al actualizar el producto.");
+      console.error(err);
+    } finally {
+      setSavingPrice(false);
+      setTimeout(() => setPriceMsg(""), 3000);
+    }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -99,7 +129,7 @@ const AdminPromosPage = () => {
       {/* Nav */}
       <nav className="relative z-10 flex flex-col md:flex-row items-center justify-between px-6 md:px-12 py-5 border-b border-border/10 gap-4 md:gap-0">
         <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-          <span className="font-bebas text-xl md:text-2xl tracking-wide text-foreground">THE ON3 PERC3NT</span>
+          <span className="font-bebas text-xl md:text-2xl tracking-wide text-foreground">THE ON3 P3RCENT</span>
         </Link>
         <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
           <span className="font-label text-[10px] md:text-xs uppercase tracking-[0.15em] text-primary">
@@ -127,6 +157,44 @@ const AdminPromosPage = () => {
           <p className="mt-4 font-body text-foreground/50 max-w-sm mx-auto text-sm md:text-base leading-relaxed">
             Crea un nuevo código de descuento para tus clientes.
           </p>
+        </section>
+
+        {/* Product Selector Card */}
+        <section className="w-full fade-up mb-10 max-w-2xl mx-auto" style={{ animationDelay: "0.05s" }}>
+          <div className="glass-card rounded-2xl p-6 md:p-8 border border-border/20 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-[40px] pointer-events-none" />
+            <h2 className="font-bebas text-2xl tracking-wide mb-2 text-foreground">PRODUCTO ACTIVO <span className="text-shimmer">EN VENTA</span></h2>
+            <p className="font-body text-sm text-muted-foreground mb-6">
+              Selecciona qué producto de Stripe se mostrará en la página principal para que los usuarios puedan comprarlo.
+            </p>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+              <select
+                className="w-full sm:w-auto flex-1 px-4 py-3 bg-secondary/30 border border-border/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all font-body text-foreground"
+                value={activePriceId}
+                onChange={(e) => setActivePriceId(e.target.value)}
+              >
+                {prices.length === 0 && <option value="">Cargando productos...</option>}
+                {prices.map(price => (
+                  <option key={price.id} value={price.id}>
+                    {price.product?.name || price.id} - ${price.unit_amount / 100} {price.currency.toUpperCase()}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={handleSaveActivePrice}
+                disabled={savingPrice || prices.length === 0}
+                className="w-full sm:w-auto px-8 py-3 rounded-xl bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-label text-sm uppercase tracking-[0.2em] font-bold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_-4px_hsl(72_100%_64%/0.4)] active:translate-y-0 disabled:opacity-50 min-w-[180px]"
+                style={{ transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)" }}
+              >
+                {savingPrice ? "GUARDANDO..." : "GUARDAR CAMBIO"}
+              </button>
+            </div>
+            {priceMsg && (
+              <p className={`mt-4 font-body text-sm ${priceMsg.includes("Error") ? "text-destructive" : "text-primary"}`}>
+                {priceMsg}
+              </p>
+            )}
+          </div>
         </section>
 
         {/* Form Card */}
@@ -260,7 +328,7 @@ const AdminPromosPage = () => {
       {/* Footer */}
       <footer className="relative z-10 border-t border-border py-6 text-center mt-auto">
         <span className="font-label text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40">
-          © 2026 ON3 PERC3NT
+          © 2026 ON3 P3RCENT
         </span>
       </footer>
     </div>
