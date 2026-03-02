@@ -43,3 +43,26 @@ export async function createPromotion(props: PromotionProps) {
   if (error) throw error;
   return data;
 }
+
+// Configuración de la tienda
+export async function getActiveStripePriceId() {
+  const { data, error } = await supabase
+    .from('store_settings')
+    .select('active_stripe_price_id')
+    .eq('id', true)
+    .single();
+
+  if (error || !data) return null;
+  return data.active_stripe_price_id;
+}
+
+export async function updateActiveStripePriceId(priceId: string) {
+  const { data, error } = await supabase
+    .from('store_settings')
+    .update({ active_stripe_price_id: priceId })
+    .eq('id', true)
+    .select();
+
+  if (error) throw error;
+  return true;
+}

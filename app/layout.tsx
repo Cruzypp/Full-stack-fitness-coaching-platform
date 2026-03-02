@@ -38,7 +38,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "The On3 Perc3nt",
+  title: "The On3 P3rcent",
   description: "Se parte del 1% ahora.",
 };
 
