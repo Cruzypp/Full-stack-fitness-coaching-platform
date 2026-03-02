@@ -56,12 +56,13 @@ function SignupContent() {
       return;
     }
 
-    // Redirect to the provided redirect URL (e.g., /pricing) or home
+    // Redirect to the provided redirect URL (e.g., /pricing) or dashboard
     if (redirectParams) {
       router.push(redirectParams);
     } else {
-      router.push("/login?message=Revisa tu correo para confirmar tu cuenta y luego inicia sesión.");
+      router.push("/admin/promos");
     }
+    router.refresh();
   };
 
   return (
@@ -72,7 +73,7 @@ function SignupContent() {
       {/* Nav */}
       <nav className="relative z-10 flex items-center justify-between px-6 md:px-12 py-5">
         <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-          <span className="font-bebas text-xl tracking-wide text-foreground">THE ON3 PERC3NT</span>
+          <span className="font-bebas text-xl tracking-wide text-foreground">THE ON3 P3RCENT</span>
         </Link>
       </nav>
 
@@ -193,7 +194,7 @@ function SignupContent() {
             <div className="mt-8 text-center">
               <p className="font-body text-sm text-muted-foreground">
                 ¿Ya tienes una cuenta?{" "}
-                <Link href={redirectParams ? `/login?redirect=${redirectParams}` : "/login"} className="text-primary hover:text-primary/80 font-medium transition-colors">
+                <Link href={redirectParams ? `/login?redirect=${encodeURIComponent(redirectParams)}` : "/login"} className="text-primary hover:text-primary/80 font-medium transition-colors">
                   Inicia sesión
                 </Link>
               </p>
@@ -207,7 +208,7 @@ function SignupContent() {
       {/* Footer */}
       <footer className="relative z-10 border-t border-border py-6 text-center mt-auto">
         <span className="font-label text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40">
-          © 2026 ON3 PERC3NT
+          © 2026 ON3 P3RCENT
         </span>
       </footer>
     </div>
