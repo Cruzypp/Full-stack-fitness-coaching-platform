@@ -206,10 +206,12 @@ function PricingContent() {
                 {!pricesLoaded ? (
                   <span className="animate-pulse text-foreground/50">...</span>
                 ) : (
-                  `$${hasPromo ? promo.promo_price : stripePriceAmount}`
+                  `$${hasPromo ? Math.round(stripePriceAmount * (1 - promo.discount_percent / 100)) : stripePriceAmount}`
                 )}
               </span>
-              <span className="font-body text-foreground/30">/único pago</span>
+              <span className="font-body text-foreground/30">
+                {activePrice?.type === 'recurring' ? '/mes' : '/único pago'}
+              </span>
             </div>
 
             {/* Original price (solo promo) */}
@@ -217,7 +219,7 @@ function PricingContent() {
               <p className="font-body text-sm text-muted-foreground/40 mb-6">
                 Precio regular{' '}
                 <span className="line-through text-muted-foreground/60">
-                  ${promo.original_price}
+                  ${stripePriceAmount}
                 </span>
               </p>
             )}
