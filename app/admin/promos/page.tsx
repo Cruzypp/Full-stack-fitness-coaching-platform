@@ -340,12 +340,12 @@ const AdminPromosPage = () => {
               <p className="font-body text-sm text-muted-foreground mb-4">
                 Comparte este enlace con tus clientes para que accedan a la oferta.
               </p>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                 <input
                   type="text"
                   readOnly
                   value={promoUrl}
-                  className="flex-1 px-4 py-3 bg-secondary/30 border border-border/30 rounded-xl font-body text-sm text-foreground/80 select-all cursor-text"
+                  className="w-full sm:flex-1 px-4 py-3 bg-secondary/30 border border-border/30 rounded-xl font-body text-xs sm:text-sm text-foreground/80 select-all cursor-text truncate"
                   onClick={(e) => (e.target as HTMLInputElement).select()}
                 />
                 <button
@@ -355,7 +355,7 @@ const AdminPromosPage = () => {
                     setCopied(true);
                     setTimeout(() => setCopied(false), 2000);
                   }}
-                  className={`px-5 py-3 rounded-xl font-label text-xs uppercase tracking-[0.15em] transition-all duration-200 min-w-[110px] ${copied
+                  className={`w-full sm:w-auto px-5 py-3 rounded-xl font-label text-xs uppercase tracking-[0.15em] transition-all duration-200 min-w-[110px] ${copied
                     ? 'bg-primary/20 text-primary border border-primary/30'
                     : 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-bold hover:-translate-y-0.5 hover:shadow-[0_8px_30px_-4px_hsl(72_100%_64%/0.4)]'
                     }`}
