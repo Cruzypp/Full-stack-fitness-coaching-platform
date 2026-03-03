@@ -49,7 +49,7 @@ export async function getActiveStripePriceId() {
   const { data, error } = await supabase
     .from('store_settings')
     .select('active_stripe_price_id')
-    .eq('id', true)
+    .eq('id', 1)
     .single();
 
   if (error || !data) return null;
@@ -60,7 +60,7 @@ export async function updateActiveStripePriceId(priceId: string) {
   const { data, error } = await supabase
     .from('store_settings')
     .update({ active_stripe_price_id: priceId })
-    .eq('id', true)
+    .eq('id', 1)
     .select();
 
   if (error) throw error;

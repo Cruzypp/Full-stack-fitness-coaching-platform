@@ -35,6 +35,8 @@ function PricingContent() {
   };
 
   const [pricesLoaded, setPricesLoaded] = useState(false);
+  // Get user's role
+  const isAdmin = user?.user_metadata?.role === 'admin';
 
   useEffect(() => {
     fetch('/api/stripe')
@@ -127,6 +129,16 @@ function PricingContent() {
           </span>
         </Link>
         <div className="flex items-center gap-4">
+          {
+            isAdmin && (
+              <Link
+                href="/admin"
+                className="font-label text-xs uppercase tracking-[0.15em] text-primary hover:text-primary/80 transition-colors"
+              >
+                Dashboard
+              </Link>
+            )
+          }
           {!authLoading && (
             user ? (
               <button
