@@ -10,6 +10,8 @@ const AdminPromosPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [promoUrl, setPromoUrl] = useState("");
+  const [copied, setCopied] = useState(false);
 
   const [formData, setFormData] = useState({
     code: "",
@@ -107,6 +109,9 @@ const AdminPromosPage = () => {
       }
 
       setSuccess("¡Promoción creada con éxito en la BD y en Stripe!");
+      const baseUrl = window.location.origin;
+      setPromoUrl(`${baseUrl}/pricing?promo=${formData.code.toLowerCase()}`);
+      setCopied(false);
       setFormData({
         code: "",
         title: "",
@@ -212,6 +217,7 @@ const AdminPromosPage = () => {
                 {success}
               </div>
             )}
+
 
             <form onSubmit={handleSubmit} className="space-y-6">
 
@@ -322,6 +328,45 @@ const AdminPromosPage = () => {
 
           </div>
         </section>
+
+        {/* Promo URL Card */}
+        {promoUrl && (
+          <section className="w-full fade-up max-w-2xl mx-auto mt-8" style={{ animationDelay: '0.15s' }}>
+            <div className="glass-card rounded-2xl p-6 md:p-8 border border-primary/20 relative overflow-hidden transition-all duration-500 hover:border-primary/40 hover:shadow-[0_0_40px_-10px_hsl(72_100%_64%/0.25)]">
+              <div className="absolute top-0 left-0 w-32 h-32 bg-primary/5 rounded-full blur-[40px] pointer-events-none" />
+              <h2 className="font-bebas text-2xl tracking-wide mb-2 text-foreground">
+                LINK DE <span className="text-shimmer">PROMOCIÓN</span>
+              </h2>
+              <p className="font-body text-sm text-muted-foreground mb-4">
+                Comparte este enlace con tus clientes para que accedan a la oferta.
+              </p>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={promoUrl}
+                  className="flex-1 px-4 py-3 bg-secondary/30 border border-border/30 rounded-xl font-body text-sm text-foreground/80 select-all cursor-text"
+                  onClick={(e) => (e.target as HTMLInputElement).select()}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(promoUrl);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  }}
+                  className={`px-5 py-3 rounded-xl font-label text-xs uppercase tracking-[0.15em] transition-all duration-200 min-w-[110px] ${copied
+                    ? 'bg-primary/20 text-primary border border-primary/30'
+                    : 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-bold hover:-translate-y-0.5 hover:shadow-[0_8px_30px_-4px_hsl(72_100%_64%/0.4)]'
+                    }`}
+                  style={{ transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }}
+                >
+                  {copied ? '✓ Copiado' : 'Copiar'}
+                </button>
+              </div>
+            </div>
+          </section>
+        )}
 
       </main>
 

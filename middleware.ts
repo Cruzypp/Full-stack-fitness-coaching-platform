@@ -34,7 +34,7 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
 
-    if (user.user_metadata?.role !== 'admin') {
+    if (user.user_metadata?.role?.toLowerCase() !== 'admin') {
       // Tiene sesión pero no es admin → manda a pricing
       return NextResponse.redirect(new URL('/pricing', request.url))
     }
