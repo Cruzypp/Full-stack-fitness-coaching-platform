@@ -4,9 +4,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Términos y Condiciones | On3 P3rcent",
+  title: "Términos y Condiciones | The On3 P3rcent",
   description:
-    "Términos y Condiciones de uso de la plataforma On3 P3rcent. Lee nuestras políticas antes de usar el servicio.",
+    "Términos y Condiciones de uso de la plataforma The On3 P3rcent. Lee nuestras políticas antes de usar el servicio.",
 };
 
 interface Subsection {
@@ -42,7 +42,7 @@ const sections: Section[] = [
     number: "02",
     title: "Descripción de los Servicios",
     content: [
-      "On3 P3rcent es una plataforma digital de coaching fitness que conecta a un coach con sus alumnos a través de:",
+      "The On3 P3rcent es una plataforma digital de coaching fitness que conecta a un coach con sus alumnos a través de:",
     ],
     bullets: [
       `Retos de entrenamiento estructurados ("Challenges") disponibles como compras únicas`,
@@ -52,7 +52,7 @@ const sections: Section[] = [
       "Seguimiento de progreso y retroalimentación del coach",
     ],
     afterBullets: [
-      "Los Servicios no constituyen asesoramiento médico. Consulte siempre a un profesional de la salud antes de iniciar cualquier programa de ejercicio. El coach es un profesional independiente; On3 P3rcent es una plataforma tecnológica que facilita la relación coach-alumno.",
+      "Los Servicios no constituyen asesoramiento médico. Consulte siempre a un profesional de la salud antes de iniciar cualquier programa de ejercicio. El coach es un profesional independiente; The On3 P3rcent es una plataforma tecnológica que facilita la relación coach-alumno.",
     ],
   },
   {
@@ -105,14 +105,14 @@ const sections: Section[] = [
     number: "06",
     title: "Stripe Connect y Procesamiento de Pagos",
     content: [
-      "On3 P3rcent utiliza Stripe Connect Marketplace para facilitar los pagos entre alumnos y coaches.",
+      "The On3 P3rcent utiliza Stripe Connect Marketplace para facilitar los pagos entre alumnos y coaches.",
     ],
     subsections: [
       {
         title: "Para Alumnos",
         bullets: [
           "Los servicios de pago son provistos por Stripe y están sujetos al Acuerdo de Servicios de Stripe",
-          "On3 P3rcent actúa como plataforma facilitadora, no como vendedor directo de los servicios de coaching",
+          "The On3 P3rcent actúa como plataforma facilitadora, no como vendedor directo de los servicios de coaching",
           "Las disputas sobre calidad del servicio deben dirigirse primero al coach a través de la plataforma",
         ],
       },
@@ -120,7 +120,7 @@ const sections: Section[] = [
         title: "Para Coaches",
         bullets: [
           "Al registrarse como coach, acepta el Acuerdo de Cuenta Conectada de Stripe (https://stripe.com/es-mx/legal/connect-account)",
-          "Autoriza a On3 P3rcent a compartir su información con Stripe para proveer los servicios de pago",
+          "Autoriza a The On3 P3rcent a compartir su información con Stripe para proveer los servicios de pago",
           "Los pagos están sujetos al calendario de desembolsos de Stripe",
           "Es responsable de declarar y pagar los impuestos aplicables sobre sus ingresos",
         ],
@@ -140,7 +140,7 @@ const sections: Section[] = [
       "El coach cancela el Challenge antes de que comience",
     ],
     afterBullets: [
-      "Para solicitar un reembolso, contáctenos dentro de los 7 días siguientes a la compra en yagope211@gmail.com. Los reembolsos aprobados se procesarán a través de Stripe en un plazo de 5 a 10 días hábiles.",
+      "Para solicitar un reembolso, contáctenos dentro de los 7 días siguientes a la compra en oviverossecin@gmail.com. Los reembolsos aprobados se procesarán a través de Stripe en un plazo de 5 a 10 días hábiles.",
     ],
   },
   {
@@ -152,7 +152,7 @@ const sections: Section[] = [
     ],
     bullets: [
       "Confirma que es el creador del contenido y cuenta con todos los derechos necesarios",
-      "Otorga a On3 P3rcent y al coach una licencia limitada para ver y usar la Evidencia únicamente para verificar el cumplimiento del Challenge",
+      "Otorga a The On3 P3rcent y al coach una licencia limitada para ver y usar la Evidencia únicamente para verificar el cumplimiento del Challenge",
       "Confirma que el contenido refleja fielmente su desempeño sin manipulación ni engaño",
       "No enviará contenido inapropiado, obsceno o que viole cualquier ley aplicable",
     ],
@@ -164,12 +164,12 @@ const sections: Section[] = [
     content: ["Usted acepta no:"],
     bullets: [
       "Enviar evidencias fraudulentas o manipuladas de entrenamiento",
-      "Hacerse pasar por otro usuario, el coach o cualquier representante de On3 P3rcent",
+      "Hacerse pasar por otro usuario, el coach o cualquier representante de The On3 P3rcent",
       "Extraer o recopilar sistemáticamente datos de los Servicios sin permiso escrito",
       "Interferir o interrumpir la seguridad o rendimiento de los Servicios",
       "Cargar código malicioso, virus o cualquier material dañino",
       "Intentar acceder a cuentas o datos privados de otros usuarios",
-      "Acosar, abusar o amenazar a otros usuarios, al coach o al personal de On3 P3rcent",
+      "Acosar, abusar o amenazar a otros usuarios, al coach o al personal de The On3 P3rcent",
     ],
     afterBullets: [
       "La violación de estas actividades podrá resultar en la cancelación inmediata de su cuenta sin reembolso.",
@@ -216,7 +216,7 @@ const sections: Section[] = [
     title: "Contáctenos",
     content: [
       "Para resolver una queja o recibir más información sobre los Servicios:",
-      "The On3 P3rcent — yagope211@gmail.com — https://theon3p3rcent.vercel.app",
+      "The On3 P3rcent — oviverossecin@gmail.com — https://theon3p3rcent.vercel.app",
     ],
   },
 ];
@@ -256,7 +256,7 @@ export default function TerminosPage() {
         {/* Intro callout */}
         <div className="border border-[#E8FF47]/20 bg-[#E8FF47]/5 rounded-lg p-5 mb-16">
           <p className="text-white/70 text-sm leading-relaxed">
-            Al acceder o utilizar la plataforma On3 P3rcent, aceptas estos
+            Al acceder o utilizar la plataforma The On3 P3rcent, aceptas estos
             Términos y Condiciones en su totalidad. Si no estás de acuerdo,
             debes dejar de usar los Servicios de inmediato.
           </p>
@@ -361,10 +361,10 @@ export default function TerminosPage() {
             © 2026 The On3 P3rcent. Todos los derechos reservados.
           </p>
           <a
-            href="mailto:yagope211@gmail.com"
+            href="mailto:oviverossecin@gmail.com"
             className="text-[#E8FF47]/60 text-xs font-mono hover:text-[#E8FF47] transition-colors"
           >
-            yagope211@gmail.com
+            oviverossecin@gmail.com
           </a>
         </div>
       </main>
