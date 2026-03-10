@@ -27,196 +27,249 @@ interface Section {
 
 const sections: Section[] = [
   {
-    id: "aceptacion",
+    id: "requisitos",
     number: "01",
-    title: "Aceptación de los Términos",
-    content: [
-      `Somos The On3 P3rcent ("Empresa", "nosotros", "nuestro"). Operamos el sitio web https://theon3p3rcent.vercel.app (el "Sitio") y los servicios relacionados de coaching de fitness (colectivamente, los "Servicios"). Contacto: oviverossecin@gmail.com`,
-      `Estos Términos y Condiciones ("Términos") constituyen un acuerdo legalmente vinculante entre usted ("Usuario") y The On3 P3rcent, que rige su acceso y uso de los Servicios. Al acceder a los Servicios, confirma haber leído, comprendido y aceptado estos Términos en su totalidad.`,
-      "SI NO ESTÁ DE ACUERDO, DEBE DEJAR DE UTILIZAR LOS SERVICIOS DE INMEDIATO.",
-      "Los Servicios están destinados a usuarios mayores de 13 años. Los menores de edad requieren el consentimiento de su padre, madre o tutor legal.",
+    title: "Requisitos de participación",
+    bullets: [
+      "Ser mayor de 18 años.",
+      "En caso de ser menor de edad, deberá contar obligatoriamente con la autorización expresa de un padre, madre o tutor legal, quien asume toda la responsabilidad del participante.",
+      "Contar con la capacidad física y mental para realizar actividad física.",
+      "El participante declara conocer su estado de salud y acepta que: Si participa lesionado, con molestias o condiciones preexistentes, lo hace bajo su total responsabilidad. Aun estando sano, participa bajo su propio riesgo.",
+      "Aceptar en su totalidad estos términos, reglas y el sistema de vidas del reto.",
     ],
   },
   {
-    id: "servicios",
+    id: "responsabilidad",
     number: "02",
-    title: "Descripción de los Servicios",
-    content: [
-      "The On3 P3rcent es una plataforma digital de coaching fitness que conecta a un coach con sus alumnos a través de:",
-    ],
+    title: "Responsabilidad y exención médica",
     bullets: [
-      `Retos de entrenamiento estructurados ("Challenges") disponibles como compras únicas`,
-      "Acceso a biblioteca de ejercicios, rutinas de entrenamiento y planes personalizados",
-      "Envío de fotos y videos como evidencia de cumplimiento del reto",
-      "Comunicación vía WhatsApp entre el coach y los alumnos",
-      "Seguimiento de progreso y retroalimentación del coach",
+      "El participante (o su tutor legal) acepta que participa voluntariamente y bajo su propia responsabilidad, independientemente de su estado de salud.",
+      "ON3P3RCENT, sus coaches, organizadores y colaboradores no se hacen responsables por lesiones, recaídas, accidentes, daños físicos, emocionales o complicaciones de salud derivadas de la participación.",
+      "La asesoría brindada no sustituye atención médica, fisioterapéutica o nutricional profesional.",
+    ],
+  },
+  {
+    id: "equipo",
+    number: "03",
+    title: "Requerimientos de equipo e instalaciones",
+    content: ["El participante deberá contar obligatoriamente con el siguiente equipo:"],
+    subsections: [
+      {
+        title: "Equipo obligatorio desde el inicio",
+        bullets: [
+          "Barra libre con suficiente peso",
+          "Mancuernas con suficiente peso",
+          "Barra para dominadas (chin ups, pull ups, etc.)",
+          "Foam roller para calentamiento y recuperación",
+          "Espacio adecuado para entrenar",
+          "Dispositivo con acceso a internet",
+          "Capacidad para grabar y enviar evidencia en video",
+          "Tenis adecuados para el gym y para correr",
+          "Faja deportiva para cargar peso",
+        ],
+      },
+      {
+        title: "Equipo para niveles avanzados (cuando se solicite)",
+        bullets: [
+          "Pelota de yoga",
+          "Bosu ball",
+          "Ligas de resistencia",
+        ],
+      },
     ],
     afterBullets: [
-      "Los Servicios no constituyen asesoramiento médico. Consulte siempre a un profesional de la salud antes de iniciar cualquier programa de ejercicio. El coach es un profesional independiente; The On3 P3rcent es una plataforma tecnológica que facilita la relación coach-alumno.",
+      "La falta de equipo no exime al participante del cumplimiento del reto, ni evita la pérdida de vidas o eliminación.",
+      "No contar con el equipo no da derecho a reembolso."
     ],
   },
   {
-    id: "propiedad",
-    number: "03",
-    title: "Derechos de Propiedad Intelectual",
-    content: [
-      `Somos dueños o licenciatarios de toda la propiedad intelectual de nuestros Servicios, incluyendo código fuente, bases de datos, funcionalidad, software, diseños, audio, video, texto, fotografías y gráficos (el "Contenido"), así como marcas comerciales y logotipos (las "Marcas").`,
-      "Le otorgamos una licencia no exclusiva, intransferible y revocable para acceder a los Servicios únicamente para su uso personal y no comercial. Queda prohibido copiar, reproducir, distribuir, vender o explotar cualquier Contenido o Marca sin nuestro permiso previo por escrito.",
-    ],
-  },
-  {
-    id: "declaraciones",
+    id: "evidencia",
     number: "04",
-    title: "Declaraciones del Usuario",
-    content: ["Al utilizar los Servicios, usted declara y garantiza que:"],
+    title: "Evidencia obligatoria (videos, fotos e InBody)",
+    subsections: [
+      {
+        title: "Videos diarios (asistencia)",
+        bullets: [
+          "Se deberá enviar un video diario correspondiente al ejercicio compuesto asignado para ese día.",
+          "El video funciona como comprobante de asistencia.",
+          "No enviar el video implica pérdida de una vida.",
+        ],
+      },
+      {
+        title: "Fotografías",
+        bullets: [
+          "Enviar foto antes de iniciar el reto.",
+          "Enviar foto al finalizar el reto para analizar el antes y después.",
+        ],
+      },
+      {
+        title: "InBody",
+        bullets: [
+          "Enviar InBody inicial antes de comenzar el reto.",
+          "Si no se envía el InBody inicial, el participante será eliminado automáticamente.",
+          "Enviar InBody cuando sea solicitado durante el reto.",
+          "Enviar InBody final al terminar el reto.",
+          "Si no se envía el InBody final, el participante no podrá obtener ningún premio.",
+        ],
+      },
+    ],
+    afterBullets: [
+      "Evidencia incompleta, fuera de tiempo o alterada no será válida."
+    ],
+  },
+  {
+    id: "horarios",
+    number: "05",
+    title: "Horarios, zonas y cortes",
     bullets: [
-      "Toda la información de registro que proporcione es verdadera, precisa, actual y completa",
-      "Mantendrá la exactitud de dicha información y la actualizará cuando sea necesario",
-      "Tiene capacidad legal y acepta cumplir con estos Términos",
-      "No es menor de 13 años",
-      "No utilizará los Servicios para ningún propósito ilegal o no autorizado",
-      "Comprende que las actividades físicas conllevan riesgos inherentes y participa de manera voluntaria",
+      "La zona horaria oficial es CDMX.",
+      "El participante cuenta con 24 horas naturales para enviar su prueba diaria.",
+      "Fines de semana no se envía prueba, excepto el sábado, en el cual sí es obligatorio.",
+      "Envíos fuera de tiempo no serán válidos y aplicarán las reglas del sistema de vidas."
+    ],
+  },
+  {
+    id: "vidas",
+    number: "06",
+    title: "Sistema de vidas y eliminación",
+    bullets: [
+      "Cada participante inicia el reto con 3 vidas.",
+      "Cada día que no se envíe el video, se pierde 1 vida automáticamente.",
+      "Al perder la totalidad de sus vidas antes de finalizar el reto, el participante será:"
+    ],
+    afterBullets: [
+      "❌ Eliminado inmediatamente del reto",
+      "❌ Sin acceso a rutinas",
+      "❌ Sin acceso a la comunidad",
+      "❌ Sin acceso a premios",
+      "",
+      "La eliminación es definitiva e irreversible."
     ],
   },
   {
     id: "pagos",
-    number: "05",
-    title: "Compras y Pagos",
-    subsections: [
-      {
-        title: "Métodos de Pago",
-        content:
-          "Aceptamos Visa y Mastercard, procesados de forma segura a través de Stripe, Inc. Al completar una compra, acepta los Términos de Servicio de Stripe (https://stripe.com/es-mx/legal).",
-      },
-      {
-        title: "Precios y Moneda",
-        content:
-          "Todos los pagos se procesarán en Pesos Mexicanos (MXN). Podemos cambiar los precios en cualquier momento.",
-      },
-      {
-        title: "Compras de Challenges",
-        content:
-          "Cada Challenge se vende como compra única. Al completar el pago, obtendrá acceso al contenido completo del Challenge durante el período especificado al momento de la compra.",
-      },
-    ],
-  },
-  {
-    id: "stripe-connect",
-    number: "06",
-    title: "Stripe Connect y Procesamiento de Pagos",
-    content: [
-      "The On3 P3rcent utiliza Stripe Connect Marketplace para facilitar los pagos entre alumnos y coaches.",
-    ],
-    subsections: [
-      {
-        title: "Para Alumnos",
-        bullets: [
-          "Los servicios de pago son provistos por Stripe y están sujetos al Acuerdo de Servicios de Stripe",
-          "The On3 P3rcent actúa como plataforma facilitadora, no como vendedor directo de los servicios de coaching",
-          "Las disputas sobre calidad del servicio deben dirigirse primero al coach a través de la plataforma",
-        ],
-      },
-      {
-        title: "Para Coaches",
-        bullets: [
-          "Al registrarse como coach, acepta el Acuerdo de Cuenta Conectada de Stripe (https://stripe.com/es-mx/legal/connect-account)",
-          "Autoriza a The On3 P3rcent a compartir su información con Stripe para proveer los servicios de pago",
-          "Los pagos están sujetos al calendario de desembolsos de Stripe",
-          "Es responsable de declarar y pagar los impuestos aplicables sobre sus ingresos",
-        ],
-      },
-    ],
-  },
-  {
-    id: "reembolsos",
     number: "07",
-    title: "Política de Reembolsos",
-    content: [
-      "Todas las compras de Challenges son definitivas. No se emitirán reembolsos una vez otorgado el acceso, excepto en los siguientes casos:",
-    ],
+    title: "Pagos y reembolsos",
     bullets: [
-      "El contenido del Challenge es materialmente diferente a lo descrito al momento de la compra",
-      "Problemas técnicos en nuestra plataforma impiden el acceso por más de 72 horas consecutivas",
-      "El coach cancela el Challenge antes de que comience",
-    ],
-    afterBullets: [
-      "Para solicitar un reembolso, contáctenos dentro de los 7 días siguientes a la compra en oviverossecin@gmail.com. Los reembolsos aprobados se procesarán a través de Stripe en un plazo de 5 a 10 días hábiles.",
+      "El pago del reto no es reembolsable bajo ninguna circunstancia.",
+      "No hay devoluciones por:",
+      "• Eliminación por pérdida de vidas",
+      "• Lesiones",
+      "• Abandono",
+      "• Falta de tiempo",
+      "• Incumplimiento",
+      "• No enviar evidencia",
     ],
   },
   {
-    id: "evidencias",
+    id: "imagen",
     number: "08",
-    title: "Contenido Generado por el Usuario y Evidencias",
+    title: "Uso de imagen, fotos y videos (consentimiento)",
     content: [
-      `La plataforma le permite enviar fotos y videos como evidencia de sus entrenamientos ("Evidencias"). Al enviar Evidencias:`,
+      "El participante (o su tutor legal) autoriza expresa, libre y gratuitamente a ON3P3RCENT a utilizar:"
     ],
     bullets: [
-      "Confirma que es el creador del contenido y cuenta con todos los derechos necesarios",
-      "Otorga a The On3 P3rcent y al coach una licencia limitada para ver y usar la Evidencia únicamente para verificar el cumplimiento del Challenge",
-      "Confirma que el contenido refleja fielmente su desempeño sin manipulación ni engaño",
-      "No enviará contenido inapropiado, obsceno o que viole cualquier ley aplicable",
-    ],
-  },
-  {
-    id: "prohibidas",
-    number: "09",
-    title: "Actividades Prohibidas",
-    content: ["Usted acepta no:"],
-    bullets: [
-      "Enviar evidencias fraudulentas o manipuladas de entrenamiento",
-      "Hacerse pasar por otro usuario, el coach o cualquier representante de The On3 P3rcent",
-      "Extraer o recopilar sistemáticamente datos de los Servicios sin permiso escrito",
-      "Interferir o interrumpir la seguridad o rendimiento de los Servicios",
-      "Cargar código malicioso, virus o cualquier material dañino",
-      "Intentar acceder a cuentas o datos privados de otros usuarios",
-      "Acosar, abusar o amenazar a otros usuarios, al coach o al personal de The On3 P3rcent",
+      "Fotografías",
+      "Videos",
+      "Testimonios"
     ],
     afterBullets: [
-      "La violación de estas actividades podrá resultar en la cancelación inmediata de su cuenta sin reembolso.",
+      "El uso será con fines publicitarios, promocionales, educativos y de difusión.",
+      "La autorización es sin límite de tiempo ni territorio y sin compensación económica.",
+      "El participante renuncia a cualquier reclamación futura relacionada con el uso de su imagen."
     ],
   },
   {
-    id: "privacidad",
+    id: "premios",
+    number: "09",
+    title: "Premios",
+    bullets: [
+      "Los premios serán anónimos.",
+      "Para determinar ganadores se evaluará:",
+      "• Resultados del InBody",
+      "• Incremento de fuerza, medido por aumento de cargas",
+      "El progreso es individual: cada participante compite contra sí mismo.",
+      "El participante con el mayor resultado general será ganador.",
+      "Habrá 3 premios generales."
+    ],
+    afterBullets: [
+      "Solo podrán ganar quienes:",
+      "• No hayan sido eliminados.",
+      "• Hayan enviado toda la evidencia requerida."
+    ],
+  },
+  {
+    id: "propiedad-intelectual",
     number: "10",
-    title: "Política de Privacidad",
-    content: [
-      "Nos preocupamos por la privacidad y seguridad de sus datos. Al usar los Servicios, acepta nuestra Política de Privacidad. Los Servicios están alojados en México y Estados Unidos.",
-      "Los datos recopilados incluyen: información de registro, datos de pago (procesados por Stripe), evidencias de entrenamiento y datos de uso de la plataforma.",
+    title: "Propiedad intelectual y confidencialidad",
+    bullets: [
+      "Todo el contenido, material, rutinas, métodos, técnicas y conocimientos proporcionados durante el reto son propiedad exclusiva de ON3P3RC3NT.",
+      "Queda prohibido compartir, distribuir, reproducir o comercializar el contenido del reto sin autorización expresa por escrito.",
+      "El incumplimiento de esta cláusula podrá resultar en:"
+    ],
+    afterBullets: [
+      "❌ Expulsión inmediata del reto",
+      "❌ Posibles acciones legales"
     ],
   },
   {
-    id: "terminacion",
+    id: "conducta",
     number: "11",
-    title: "Vigencia y Terminación",
-    content: [
-      "Estos Términos permanecerán en plena vigencia mientras use los Servicios. Nos reservamos el derecho de cancelar su cuenta y eliminar cualquier contenido en cualquier momento, sin previo aviso, por incumplimiento de estos Términos o cualquier ley aplicable.",
+    title: "Conducta y acceso",
+    bullets: [
+      "El acceso al reto es personal e intransferible.",
+      "ON3P3RCENT podrá remover o expulsar a cualquier participante que:",
+      "• Incumpla las reglas",
+      "• Falte al respeto",
+      "• Comparta contenido del programa",
+      "• Afecte a la comunidad"
+    ],
+    afterBullets: [
+      "La expulsión no genera derecho a reembolso."
     ],
   },
   {
-    id: "ley",
+    id: "fuerza-mayor",
     number: "12",
-    title: "Ley Aplicable y Resolución de Controversias",
+    title: "Fuerza mayor",
     content: [
-      "Estos Términos se regirán por las leyes de los Estados Unidos Mexicanos. Los tribunales de México tendrán jurisdicción exclusiva para resolver cualquier controversia.",
-      "Antes de iniciar cualquier proceso formal, ambas partes acuerdan negociar informalmente durante al menos 30 días. Si no prosperara, las controversias se resolverán mediante arbitraje con sede en Monterrey, Nuevo León, México, en idioma español.",
+      "ON3P3RCENT no será responsable por incumplimientos derivados de situaciones de fuerza mayor, incluyendo pero no limitándose a:"
+    ],
+    bullets: [
+      "Fallas de plataforma",
+      "Cortes de internet",
+      "Problemas técnicos externos",
+      "Casos externos o ajenos a la organización"
+    ],
+    afterBullets: [
+      "En estos casos:",
+      "• El reto continuará.",
+      "• Las decisiones operativas se tomarán a criterio exclusivo de la organización, sin generar derecho a reembolso o compensación."
     ],
   },
   {
-    id: "descargo",
+    id: "modificaciones",
     number: "13",
-    title: "Descargo de Responsabilidad y Limitación de Responsabilidad",
+    title: "Modificaciones",
     content: [
-      "LOS SERVICIOS SE PROPORCIONAN TAL COMO ESTÁN Y SEGÚN DISPONIBILIDAD. LAS ACTIVIDADES FÍSICAS CONLLEVAN RIESGOS INHERENTES. ON3 P3RCENT NO ES RESPONSABLE POR LESIONES, COMPLICACIONES DE SALUD O RESULTADOS ADVERSOS DERIVADOS DE LA PARTICIPACIÓN EN CHALLENGES.",
-      "NUESTRA RESPONSABILIDAD TOTAL HACIA USTED ESTARÁ LIMITADA AL MONTO PAGADO POR USTED DURANTE LOS DOS (2) MESES ANTERIORES A LA CAUSA DE LA ACCIÓN.",
+      "ON3P3RCENT se reserva el derecho de modificar estos términos y condiciones en cualquier momento para mejorar la operación del reto.",
+      "Cualquier cambio será comunicado a los participantes."
     ],
   },
   {
-    id: "contacto",
+    id: "aceptacion",
     number: "14",
-    title: "Contáctenos",
+    title: "Aceptación",
     content: [
-      "Para resolver una queja o recibir más información sobre los Servicios:",
-      "The On3 P3rcent — oviverossecin@gmail.com — https://theon3p3rcent.vercel.app",
+      "Al realizar el pago, registrarse o participar, el participante (o su tutor legal) declara haber:"
+    ],
+    bullets: [
+      "Leído",
+      "Comprendido",
+      "Aceptado"
+    ],
+    afterBullets: [
+      "la totalidad de estos términos y condiciones."
     ],
   },
 ];
@@ -255,10 +308,9 @@ export default function TerminosPage() {
 
         {/* Intro callout */}
         <div className="border border-[#E8FF47]/20 bg-[#E8FF47]/5 rounded-lg p-5 mb-16">
+          <p className="text-[#E8FF47] font-bold mb-2">Reto ON3P3RCENT</p>
           <p className="text-white/70 text-sm leading-relaxed">
-            Al acceder o utilizar la plataforma The On3 P3rcent, aceptas estos
-            Términos y Condiciones en su totalidad. Si no estás de acuerdo,
-            debes dejar de usar los Servicios de inmediato.
+            Al inscribirse, realizar el pago y/o participar en el Reto ON3P3RCENT, el participante acepta de manera expresa los siguientes términos y condiciones.
           </p>
         </div>
 
