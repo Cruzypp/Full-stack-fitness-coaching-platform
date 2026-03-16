@@ -3,14 +3,12 @@ import { stripe } from "../../lib/stripe";
 import { createClient } from "@supabase/supabase-js";
 
 // Use service role key to bypass RLS and update user profiles server-side
-
-
 export async function GET(req: NextRequest) {
   const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
-  
+
   try {
     const { searchParams } = new URL(req.url);
     const sessionId = searchParams.get("session_id");
