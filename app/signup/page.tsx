@@ -18,6 +18,7 @@ function SignupContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectParams = searchParams.get("redirect");
+  const decodedRedirect = redirectParams ? decodeURIComponent(redirectParams) : null;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.name === 'phone' ? e.target.value.replace(/\D/g, '').slice(0, 10) : e.target.value;
@@ -57,8 +58,8 @@ function SignupContent() {
     }
 
     // Redirect to the provided redirect URL (e.g., /pricing) or dashboard
-    if (redirectParams) {
-      router.push(redirectParams);
+    if (decodedRedirect) {
+      router.push(decodedRedirect);
     } else {
       router.push("/admin/promos");
     }
@@ -194,7 +195,7 @@ function SignupContent() {
             <div className="mt-8 text-center">
               <p className="font-body text-sm text-muted-foreground">
                 ¿Ya tienes una cuenta?{" "}
-                <Link href={redirectParams ? `/login?redirect=${encodeURIComponent(redirectParams)}` : "/login"} className="text-primary hover:text-primary/80 font-medium transition-colors">
+                <Link href={decodedRedirect ? `/login?redirect=${encodeURIComponent(decodedRedirect)}` : "/login"} className="text-primary hover:text-primary/80 font-medium transition-colors">
                   Inicia sesión
                 </Link>
               </p>

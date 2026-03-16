@@ -1,34 +1,9 @@
 "use client"
-import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { supabase } from "./lib/connection";
-import { User } from "@supabase/supabase-js";
+import { useAuthStore } from "./store/useAuthStore";
 
 export default function Home() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
-
-  useEffect(() => {
-    // Revisar la sesión actual
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    // Escuchar cambios en la autenticación (login, logout)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.refresh();
-  };
+  const { user, loading, signOut } = useAuthStore();
 
   return (
     <div className="min-h-screen noise-bg relative flex flex-col">
@@ -45,7 +20,7 @@ export default function Home() {
           {!loading && (
             user ? (
               <button
-                onClick={handleLogout}
+                onClick={signOut}
                 className="font-label text-xs uppercase tracking-[0.15em] text-muted-foreground hover:text-foreground transition-colors"
               >
                 Cerrar Sesión
