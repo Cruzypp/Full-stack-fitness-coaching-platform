@@ -2,7 +2,6 @@
 import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { supabase } from '../lib/connection'
 
 function SuccessContent() {
   const searchParams = useSearchParams()
@@ -18,30 +17,15 @@ function SuccessContent() {
 
     const verifyPaymentAndUpdateDB = async () => {
       try {
-        // Obtenemos la sesión del cliente (solo para confirmar que están logueados)
-        const { data: { session: currentSession } } = await supabase.auth.getSession()
+        const res = await fetch(`/api/verify-session?session_id=${sessionId}`)
+        const data = await res.json()
 
-        if (!currentSession) {
-          throw new Error("No hay sesión activa de usuario")
+        if (!res.ok) {
+          throw new Error(data.error || 'Error al verificar el pago')
         }
 
-        const userId = currentSession.user.id
-
-        // Guardamos el pago y traemos el primer nombre del usuario al mismo tiempo
-        const { data: profileData, error } = await supabase
-          .from('profiles')
-          .update({ payment_date: new Date().toISOString() })
-          .eq('id', userId)
-          .select('first_name')
-          .single()
-
-        if (error) {
-          console.error("Error al guardar el pago:", error)
-          throw error
-        }
-
-        if (profileData && profileData.first_name) {
-          setUserName(profileData.first_name)
+        if (data.first_name) {
+          setUserName(data.first_name)
         }
 
         setStatus('success')

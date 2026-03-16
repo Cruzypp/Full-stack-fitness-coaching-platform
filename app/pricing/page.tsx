@@ -5,34 +5,14 @@ import { useRouter } from 'next/navigation'
 import { usePromo } from '@/app/hooks/usePromo'
 import { CountdownTimer } from '@/app/components/CountdownTime'
 import Link from 'next/link'
-import { supabase, getActiveStripePriceId } from '@/app/lib/connection'
+import { getActiveStripePriceId } from '@/app/lib/connection'
+import { useAuthStore } from '@/app/store/useAuthStore'
 
 function PricingContent() {
   const router = useRouter();
+  const { user, loading: authLoading, signOut } = useAuthStore();
   const [prices, setPrices] = useState<any[]>([]);
   const [activePriceId, setActivePriceId] = useState<string | null>(null);
-  const [user, setUser] = useState<any>(null);
-  const [authLoading, setAuthLoading] = useState(true);
-
-  useEffect(() => {
-    // Revisar la sesión actual
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setAuthLoading(false);
-    });
-
-    // Escuchar cambios en la autenticación (login, logout)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.refresh();
-  };
 
   const [pricesLoaded, setPricesLoaded] = useState(false);
   // Get user's role
@@ -64,6 +44,7 @@ function PricingContent() {
 
   const { promo, loading: promoLoading, expired, handleExpired } = usePromo()
   const [isCheckingOut, setIsCheckingOut] = useState(false)
+  const [checkoutError, setCheckoutError] = useState<string | null>(null)
 
   if (promoLoading || authLoading) {
     return (
@@ -108,9 +89,11 @@ function PricingContent() {
         window.location.href = data.url;
       } else {
         console.error("No checkout URL returned", data);
+        setCheckoutError(data.error || "Error al iniciar el pago. Intenta de nuevo.");
       }
     } catch (err) {
       console.error(err);
+      setCheckoutError("Error de conexión. Intenta de nuevo.");
     } finally {
       setIsCheckingOut(false);
     }
@@ -142,7 +125,7 @@ function PricingContent() {
           {!authLoading && (
             user ? (
               <button
-                onClick={handleLogout}
+                onClick={signOut}
                 className="font-label text-xs uppercase tracking-[0.15em] text-muted-foreground hover:text-foreground transition-colors"
               >
                 Cerrar Sesión
@@ -266,6 +249,11 @@ function PricingContent() {
               {isCheckingOut ? 'PROCESANDO...' : hasPromo ? 'OBTENER OFERTA AHORA' : 'COMENZAR AHORA'}
             </button>
 
+            {checkoutError && (
+              <p className="text-center font-body text-xs text-red-400/80 mt-3">
+                {checkoutError}
+              </p>
+            )}
             <p className="text-center font-body text-xs text-muted-foreground/30 mt-4">
               Cancela cuando quieras · Sin compromisos
             </p>
