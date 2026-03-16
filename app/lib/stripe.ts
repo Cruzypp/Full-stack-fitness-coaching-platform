@@ -1,10 +1,10 @@
 import { Stripe } from 'stripe';
 
 // Initialize Stripe instance
-//export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
+export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
 // Stripe test instance
-export const stripe = new Stripe(process.env.STRIPE_TEST_SECRET_KEY as string);
+//export const stripe = new Stripe(process.env.STRIPE_TEST_SECRET_KEY as string);
 
 /**
  * Simplified Price type for frontend consumption
