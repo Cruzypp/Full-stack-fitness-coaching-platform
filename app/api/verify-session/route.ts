@@ -1,13 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "../../lib/stripe";
-import { createClient } from "@supabase/supabase-js";
+import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
 // Use service role key to bypass RLS and update user profiles server-side
 export async function GET(req: NextRequest) {
-  const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+  const supabaseAdmin = getSupabaseAdmin();
 
   try {
     const { searchParams } = new URL(req.url);

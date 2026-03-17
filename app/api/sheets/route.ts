@@ -2,22 +2,9 @@ import { NextRequest, NextResponse } from "next/server"
 import { google } from "googleapis"
 import { createClient } from "@supabase/supabase-js"
 import { tr, trItems } from "@/app/lib/translations"
+import { getSupabaseAdmin } from "@/lib/supabase-admin"
 
 const SHEET_ID = process.env.GOOGLE_SHEET_ID!
-
-// ── Cliente Supabase (admin) ────────────────────────────────────────────────
-// Se usa service_role_key para poder leer user_metadata sin requerir sesión activa.
-function getSupabaseAdmin() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
-  
-  if (!url || !key) {
-    throw new Error("Supabase URL and Service Role Key are required")
-  }
-
-  return createClient(url, key)
-}
-
 
 // ── Cliente Google Sheets ───────────────────────────────────────────────────
 
@@ -150,6 +137,7 @@ async function upsertRow(
  * Ambas escrituras se ejecutan en paralelo con Promise.all para reducir latencia.
  */
 export async function POST(req: NextRequest) {
+  console.log("Environment keys available:", Object.keys(process.env).filter(k => k.includes("SUPABASE") || k.includes("GOOGLE")))
   try {
     const data = await req.json()
     const sheets = await getSheets()
