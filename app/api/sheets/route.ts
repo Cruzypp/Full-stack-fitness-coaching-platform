@@ -7,10 +7,17 @@ const SHEET_ID = process.env.GOOGLE_SHEET_ID!
 
 // ── Cliente Supabase (admin) ────────────────────────────────────────────────
 // Se usa service_role_key para poder leer user_metadata sin requerir sesión activa.
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+function getSupabaseAdmin() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  
+  if (!url || !key) {
+    throw new Error("Supabase URL and Service Role Key are required")
+  }
+
+  return createClient(url, key)
+}
+
 
 // ── Cliente Google Sheets ───────────────────────────────────────────────────
 
@@ -155,6 +162,7 @@ export async function POST(req: NextRequest) {
     let nombre = ""
     let telefono = ""
     if (data.userId) {
+      const supabaseAdmin = getSupabaseAdmin()
       const { data: userData } = await supabaseAdmin.auth.admin.getUserById(data.userId)
       const meta = userData?.user?.user_metadata ?? {}
       nombre   = [meta.first_name ?? "", meta.last_name ?? ""].filter(Boolean).join(" ")
