@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 
-const INBODY_PARSER_URL = "http://k4k0wo8sco88wcc40s08sw88.187.124.86.2.sslip.io/inbody_parser"
+const INBODY_PARSER_URL = "https://pythonactions.cruzdomain.cloud/inbody_parser"
 
 /** Maps the Python parser's snake_case output to our form field names */
 function mapParserToForm(raw: Record<string, unknown>) {
