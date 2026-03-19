@@ -9,6 +9,7 @@ import { getActiveStripePriceId } from '@/app/lib/connection'
 import { useAuthStore } from '@/app/store/useAuthStore'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
+import BottomNav from '@/components/BottomNav'
 
 function PricingContent() {
   const router = useRouter();
@@ -126,16 +127,23 @@ function PricingContent() {
           </span>
         </Link>
         <div className="flex items-center gap-4">
-          {
-            isAdmin && (
-              <Link
-                href="/admin"
-                className="font-label text-xs uppercase tracking-[0.15em] text-primary hover:text-primary/80 transition-colors"
-              >
-                Dashboard
-              </Link>
-            )
-          }
+          {/* Nav links — solo desktop */}
+          {user && (
+            <Link
+              href="/mis-cargas"
+              className="hidden md:inline font-label text-xs uppercase tracking-[0.15em] text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Mis Cargas
+            </Link>
+          )}
+          {isAdmin && (
+            <Link
+              href="/admin"
+              className="font-label text-xs uppercase tracking-[0.15em] text-primary hover:text-primary/80 transition-colors"
+            >
+              Dashboard
+            </Link>
+          )}
           {!authLoading && (
             user ? (
               <button
@@ -218,8 +226,8 @@ function PricingContent() {
                   `$${hasPromo ? Math.round(stripePriceAmount * (1 - promo.discount_percent / 100)) : stripePriceAmount}`
                 )}
               </span>
-              <span className="font-body text-foreground/30">
-                {activePrice?.type === 'recurring' ? '/mes' : '/único pago'}
+              <span className="font-body text-white">
+                {activePrice?.type === 'recurring' ? '/ mes' : '/ único pago'}
               </span>
             </div>
 
@@ -275,8 +283,10 @@ function PricingContent() {
         </section>
       </main>
 
+      <BottomNav activeTab="home" />
+
       {/* Footer */}
-      <footer className="relative z-10 border-t border-border py-6 text-center mt-auto">
+      <footer className="relative z-10 border-t border-border py-6 pb-24 md:pb-6 text-center mt-auto">
         <span className="font-label text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40">
           © 2026 ON3 P3RCENT
         </span>
