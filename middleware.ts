@@ -40,13 +40,6 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // ── Proteger /mis-cargas ───────────────────────────────
-  if (request.nextUrl.pathname.startsWith('/mis-cargas')) {
-    if (!user) {
-      return NextResponse.redirect(new URL('/login?redirect=/mis-cargas', request.url))
-    }
-  }
-
   // ── Si ya tiene sesión y va a /login → manda a admin ──
   if (user && request.nextUrl.pathname === '/login') {
     return NextResponse.redirect(new URL('/admin/promos', request.url))
@@ -57,5 +50,5 @@ export async function middleware(request: NextRequest) {
 
 // Solo se ejecuta en estas rutas
 export const config = {
-  matcher: ['/admin/:path*', '/login', '/mis-cargas/:path*', '/mis-cargas'],
+  matcher: ['/admin/:path*', '/login'],
 }
