@@ -34,10 +34,6 @@ export default function StepIntro() {
           </div>
         ))}
       </div>
-
-      <p className="text-xs text-foreground/40 leading-relaxed">
-        No entrenes al fallo. Si dudas con el peso, bájale.
-      </p>
     </div>
   );
 }
