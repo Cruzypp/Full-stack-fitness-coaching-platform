@@ -35,6 +35,14 @@ export default function StepExercise({ register, watch, setValue, errors, exerci
         </p>
       </div>
 
+      {/* Aviso barra olímpica */}
+      <div className="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-primary/5 border border-primary/20">
+        <span className="text-sm mt-0.5">⚖️</span>
+        <p className="text-xs text-foreground/60 leading-relaxed">
+          Tu PR debe incluir el peso de la barra olímpica (20 kg).
+        </p>
+      </div>
+
       {/* Weight */}
       <div className="space-y-2">
         <label className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-label">
