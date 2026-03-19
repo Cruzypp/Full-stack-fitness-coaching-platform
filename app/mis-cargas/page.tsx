@@ -55,8 +55,14 @@ export default function MisCargas() {
       .order("recorded_at", { ascending: false })
       .then(({ data, error }) => {
         if (error) console.error("[mis-cargas] Error querying pr_records:", error);
-        console.log("[mis-cargas] user_id:", user.id, "| records:", data);
-        setRecords(data || []);
+        // Quedarse solo con el PR más reciente por ejercicio
+        const latest = Object.values(
+          (data || []).reduce((acc, r) => {
+            if (!acc[r.exercise]) acc[r.exercise] = r;
+            return acc;
+          }, {} as Record<string, typeof data[0]>)
+        );
+        setRecords(latest);
         setLoadingData(false);
       });
   }, [user]);
