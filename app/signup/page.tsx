@@ -1,8 +1,10 @@
 "use client"
-import { useState, Suspense } from "react";
+import { useState, Suspense, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "../lib/connection";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
 
 function SignupContent() {
   const [formData, setFormData] = useState({
@@ -19,6 +21,18 @@ function SignupContent() {
   const searchParams = useSearchParams();
   const redirectParams = searchParams.get("redirect");
   const decodedRedirect = redirectParams ? decodeURIComponent(redirectParams) : null;
+
+  const navRef = useRef<HTMLElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(() => {
+    const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+
+    tl.from(navRef.current, { y: -30, opacity: 0, duration: 0.4 })
+      .from(headerRef.current, { y: 30, opacity: 0, duration: 0.6 }, "-=0.1")
+      .from(cardRef.current, { y: 50, opacity: 0, scale: 0.96, duration: 0.7, ease: "back.out(1.2)" }, "-=0.3");
+  });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.name === 'phone' ? e.target.value.replace(/\D/g, '').slice(0, 10) : e.target.value;
@@ -57,7 +71,6 @@ function SignupContent() {
       return;
     }
 
-    // Redirect to the provided redirect URL (e.g., /pricing) or dashboard
     if (decodedRedirect) {
       router.push(decodedRedirect);
     } else {
@@ -72,7 +85,7 @@ function SignupContent() {
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
 
       {/* Nav */}
-      <nav className="relative z-10 flex items-center justify-between px-6 md:px-12 py-5">
+      <nav ref={navRef} className="relative z-10 flex items-center justify-between px-6 md:px-12 py-5">
         <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
           <span className="font-bebas text-xl tracking-wide text-foreground">THE ON3 P3RCENT</span>
         </Link>
@@ -81,7 +94,7 @@ function SignupContent() {
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 py-10 pb-20">
 
         {/* Header Text */}
-        <section className="text-center fade-up mb-8">
+        <section ref={headerRef} className="text-center mb-8">
           <h1 className="font-bebas text-[clamp(2.5rem,6vw,4rem)] leading-[0.95] tracking-tight">
             ÚNETE AL <span className="text-shimmer">1%</span>
           </h1>
@@ -91,8 +104,8 @@ function SignupContent() {
         </section>
 
         {/* Signup Card */}
-        <section className="w-full fade-up" style={{ animationDelay: "0.1s" }}>
-          <div className="glass-card rounded-2xl p-6 md:p-10 border border-border/20 max-w-md mx-auto focus-within:border-primary/30 hover:border-primary/20 transition-colors duration-500">
+        <section className="w-full">
+          <div ref={cardRef} className="glass-card rounded-2xl p-6 md:p-10 border border-border/20 max-w-md mx-auto focus-within:border-primary/30 hover:border-primary/20 transition-colors duration-500">
 
             {error && (
               <div className="mb-6 p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm font-body text-center">

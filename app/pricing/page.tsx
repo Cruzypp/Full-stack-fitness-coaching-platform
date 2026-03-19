@@ -1,12 +1,15 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, Suspense, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { usePromo } from '@/app/hooks/usePromo'
 import { CountdownTimer } from '@/app/components/CountdownTime'
 import Link from 'next/link'
 import { getActiveStripePriceId } from '@/app/lib/connection'
 import { useAuthStore } from '@/app/store/useAuthStore'
+import { useGSAP } from '@gsap/react'
+import gsap from 'gsap'
+import BottomNav from '@/components/BottomNav'
 
 function PricingContent() {
   const router = useRouter();
@@ -45,6 +48,18 @@ function PricingContent() {
   const { promo, loading: promoLoading, expired, handleExpired } = usePromo()
   const [isCheckingOut, setIsCheckingOut] = useState(false)
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
+
+  const navRef = useRef<HTMLElement>(null)
+  const heroRef = useRef<HTMLElement>(null)
+  const cardRef = useRef<HTMLElement>(null)
+
+  useGSAP(() => {
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
+
+    tl.from(navRef.current, { y: -30, opacity: 0, duration: 0.4 })
+      .from(heroRef.current, { y: 40, opacity: 0, duration: 0.7 }, '-=0.1')
+      .from(cardRef.current, { y: 60, opacity: 0, scale: 0.95, duration: 0.8, ease: 'back.out(1.1)' }, '-=0.3')
+  })
 
   if (promoLoading || authLoading) {
     return (
@@ -105,23 +120,30 @@ function PricingContent() {
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
 
       {/* Nav */}
-      <nav className="relative z-10 flex items-center justify-between px-6 md:px-12 py-5">
+      <nav ref={navRef} className="relative z-10 flex items-center justify-between px-6 md:px-12 py-5">
         <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
           <span className="font-bebas text-xl tracking-wide text-foreground">
             THE ON3 P3RCENT
           </span>
         </Link>
         <div className="flex items-center gap-4">
-          {
-            isAdmin && (
-              <Link
-                href="/admin"
-                className="font-label text-xs uppercase tracking-[0.15em] text-primary hover:text-primary/80 transition-colors"
-              >
-                Dashboard
-              </Link>
-            )
-          }
+          {/* Nav links — solo desktop */}
+          {user && (
+            <Link
+              href="/mis-cargas"
+              className="hidden md:inline font-label text-xs uppercase tracking-[0.15em] text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Mis Cargas
+            </Link>
+          )}
+          {isAdmin && (
+            <Link
+              href="/admin"
+              className="font-label text-xs uppercase tracking-[0.15em] text-primary hover:text-primary/80 transition-colors"
+            >
+              Dashboard
+            </Link>
+          )}
           {!authLoading && (
             user ? (
               <button
@@ -144,7 +166,7 @@ function PricingContent() {
 
       <main className="relative z-10 flex-1 flex flex-col items-center px-6 py-12">
         {/* Hero */}
-        <section className="text-center fade-up mb-10">
+        <section ref={heroRef} className="text-center mb-10">
           <p className="font-label text-[10px] uppercase tracking-[0.3em] text-primary mb-6">
             fitness coaching platform
           </p>
@@ -158,7 +180,7 @@ function PricingContent() {
 
         {/* Timer (solo si hay promo activa) */}
         {hasPromo && (
-          <section className="w-full max-w-md mx-auto fade-up" style={{ animationDelay: '0.15s' }}>
+          <section className="w-full max-w-md mx-auto">
             <CountdownTimer
               secondsRemaining={promo.seconds_remaining}
               onExpired={handleExpired}
@@ -176,7 +198,7 @@ function PricingContent() {
         )}
 
         {/* Pricing Card */}
-        <section className="w-full max-w-md mx-auto fade-up" style={{ animationDelay: hasPromo ? '0.3s' : '0.15s' }}>
+        <section ref={cardRef} className="w-full max-w-md mx-auto">
           <div className="glass-card rounded-2xl p-8 md:p-10 border border-border/20 relative overflow-hidden transition-all duration-500 hover:border-primary/40 hover:shadow-[0_0_40px_-10px_hsl(72_100%_64%/0.25)]">
             {/* Corner glow */}
             <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-[40px]" />
@@ -204,8 +226,8 @@ function PricingContent() {
                   `$${hasPromo ? Math.round(stripePriceAmount * (1 - promo.discount_percent / 100)) : stripePriceAmount}`
                 )}
               </span>
-              <span className="font-body text-foreground/30">
-                {activePrice?.type === 'recurring' ? '/mes' : '/único pago'}
+              <span className="font-body text-white">
+                {activePrice?.type === 'recurring' ? '/ mes' : '/ único pago'}
               </span>
             </div>
 
@@ -261,8 +283,10 @@ function PricingContent() {
         </section>
       </main>
 
+      <BottomNav activeTab="home" />
+
       {/* Footer */}
-      <footer className="relative z-10 border-t border-border py-6 text-center mt-auto">
+      <footer className="relative z-10 border-t border-border py-6 pb-24 md:pb-6 text-center mt-auto">
         <span className="font-label text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40">
           © 2026 ON3 P3RCENT
         </span>
