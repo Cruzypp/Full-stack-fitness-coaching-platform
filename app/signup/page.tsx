@@ -13,6 +13,7 @@ function SignupContent() {
     email: "",
     phone: "",
     password: "",
+    confirmPassword: "",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -46,6 +47,12 @@ function SignupContent() {
 
     if (formData.phone.length !== 10) {
       setError("El teléfono debe tener exactamente 10 dígitos.");
+      setLoading(false);
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setError("Las contraseñas no coinciden.");
       setLoading(false);
       return;
     }
@@ -188,6 +195,21 @@ function SignupContent() {
                   type="password"
                   name="password"
                   value={formData.password}
+                  onChange={handleChange}
+                  required
+                  placeholder="••••••••"
+                  className="w-full px-4 py-3 bg-secondary/30 border border-border/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all font-body text-foreground placeholder:text-muted-foreground/30"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="font-label text-xs uppercase tracking-[0.15em] text-muted-foreground ml-1">
+                  Confirmar Contraseña
+                </label>
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
                   onChange={handleChange}
                   required
                   placeholder="••••••••"
