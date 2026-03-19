@@ -187,8 +187,6 @@ export default function MisCargas() {
                           className={`cursor-pointer transition-colors ${
                             isSelected
                               ? "bg-green-500/15 hover:bg-green-500/20"
-                              : pct === 100
-                              ? "bg-primary/5 hover:bg-primary/10"
                               : "hover:bg-muted/30"
                           }`}
                         >
