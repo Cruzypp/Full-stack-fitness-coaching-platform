@@ -56,11 +56,12 @@ export default function MisCargas() {
       .then(({ data, error }) => {
         if (error) console.error("[mis-cargas] Error querying pr_records:", error);
         // Quedarse solo con el PR más reciente por ejercicio
+        const rows = (data || []) as PrRecord[];
         const latest = Object.values(
-          (data || []).reduce((acc, r) => {
+          rows.reduce((acc, r) => {
             if (!acc[r.exercise]) acc[r.exercise] = r;
             return acc;
-          }, {} as Record<string, typeof data[0]>)
+          }, {} as Record<string, PrRecord>)
         );
         setRecords(latest);
         setLoadingData(false);
