@@ -18,9 +18,6 @@ export interface PRFormData {
   bench_press_sensation: string;
   shoulder_press_weight: number | '';
   shoulder_press_sensation: string;
-  pull_weight: number | '';
-  pull_reps: number | '';
-  pull_sensation: string;
   deadlift_weight: number | '';
   deadlift_sensation: string;
 }
@@ -48,15 +45,6 @@ const EXERCISES = [
     sensationField: 'shoulder_press_sensation' as keyof PRFormData,
   },
   {
-    title: 'Pull / Row',
-    day: 'Jueves',
-    category: 'Tirón',
-    weightField: 'pull_weight' as keyof PRFormData,
-    sensationField: 'pull_sensation' as keyof PRFormData,
-    repsField: 'pull_reps' as keyof PRFormData,
-    repsLabel: 'Reps completadas (5RM técnico)',
-  },
-  {
     title: 'Deadlift',
     day: 'Viernes',
     category: 'Cadena Posterior',
@@ -65,7 +53,7 @@ const EXERCISES = [
   },
 ];
 
-// Step 0 = intro, 1-5 = ejercicios, 6 = done
+// Step 0 = intro, 1-N = ejercicios, N+1 = done
 const TOTAL_STEPS = EXERCISES.length + 2;
 
 export default function PRInicial() {
@@ -74,20 +62,26 @@ export default function PRInicial() {
   const [currentStep, setCurrentStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
 
+  // Mapa de ejercicios marcados como lesionado. Clave = weightField del ejercicio.
+  const [injuredMap, setInjuredMap] = useState<Record<string, boolean>>({});
+
   const { register, watch, setValue, trigger, formState: { errors }, getValues } = useForm<PRFormData>({
     defaultValues: {
       back_squat_weight: '', back_squat_sensation: '',
       bench_press_weight: '', bench_press_sensation: '',
       shoulder_press_weight: '', shoulder_press_sensation: '',
-      pull_weight: '', pull_reps: '', pull_sensation: '',
       deadlift_weight: '', deadlift_sensation: '',
     },
   });
 
   const isIntro = currentStep === 0;
   const isDone = currentStep === TOTAL_STEPS - 1;
-  const exerciseIndex = currentStep - 1; // 0-based index into EXERCISES
+  const exerciseIndex = currentStep - 1; // 0-based
   const progress = Math.round((currentStep / (TOTAL_STEPS - 1)) * 100);
+
+  const toggleInjured = (weightField: string) => {
+    setInjuredMap((prev) => ({ ...prev, [weightField]: !prev[weightField] }));
+  };
 
   const handleNext = async () => {
     if (isIntro) {
@@ -96,23 +90,23 @@ export default function PRInicial() {
     }
 
     const exercise = EXERCISES[exerciseIndex];
-    const fieldsToValidate: (keyof PRFormData)[] = [
-      exercise.weightField,
-      exercise.sensationField,
-      ...(exercise.repsField ? [exercise.repsField] : []),
-    ];
+    const isInjured = injuredMap[exercise.weightField] ?? false;
 
-    // Validate sensation manually (not registered via RHF)
-    const sensationVal = watch(exercise.sensationField);
-    if (!sensationVal) {
-      toast.error('Selecciona cómo se sintió el ejercicio');
-      return;
+    if (!isInjured) {
+      const sensationVal = watch(exercise.sensationField);
+      if (!sensationVal) {
+        toast.error('Selecciona cómo se sintió el ejercicio');
+        return;
+      }
+
+      const fieldsToValidate: (keyof PRFormData)[] = [
+        exercise.weightField,
+        exercise.sensationField,
+      ];
+      const valid = await trigger(fieldsToValidate);
+      if (!valid) return;
     }
 
-    const valid = await trigger(fieldsToValidate);
-    if (!valid) return;
-
-    // Last exercise → submit
     if (exerciseIndex === EXERCISES.length - 1) {
       await handleSubmit();
     } else {
@@ -125,12 +119,18 @@ export default function PRInicial() {
     const values = getValues();
 
     const records = [
-      { exercise: 'Back Squat',      weight_kg: values.back_squat_weight,      reps: 1,                    sensation: values.back_squat_sensation },
-      { exercise: 'Bench Press',     weight_kg: values.bench_press_weight,     reps: 1,                    sensation: values.bench_press_sensation },
-      { exercise: 'Shoulder Press',  weight_kg: values.shoulder_press_weight,  reps: 1,                    sensation: values.shoulder_press_sensation },
-      { exercise: 'Pull / Row',      weight_kg: values.pull_weight,            reps: values.pull_reps,     sensation: values.pull_sensation },
-      { exercise: 'Deadlift',        weight_kg: values.deadlift_weight,        reps: 1,                    sensation: values.deadlift_sensation },
-    ].map((r) => ({ ...r, user_id: user!.id, week: 0 }));
+      { exercise: 'Back Squat',     weight_kg: values.back_squat_weight,     reps: 1, sensation: values.back_squat_sensation,     weightField: 'back_squat_weight' },
+      { exercise: 'Bench Press',    weight_kg: values.bench_press_weight,    reps: 1, sensation: values.bench_press_sensation,    weightField: 'bench_press_weight' },
+      { exercise: 'Shoulder Press', weight_kg: values.shoulder_press_weight, reps: 1, sensation: values.shoulder_press_sensation, weightField: 'shoulder_press_weight' },
+      { exercise: 'Deadlift',       weight_kg: values.deadlift_weight,       reps: 1, sensation: values.deadlift_sensation,       weightField: 'deadlift_weight' },
+    ].map(({ weightField, ...r }) => ({
+      ...r,
+      user_id: user!.id,
+      week: 0,
+      injured: injuredMap[weightField] ?? false,
+      weight_kg: injuredMap[weightField] ? null : r.weight_kg,
+      sensation: injuredMap[weightField] ? 'Lesionado' : r.sensation,
+    }));
 
     const { error } = await supabase.from('pr_records').insert(records);
 
@@ -187,6 +187,8 @@ export default function PRInicial() {
               setValue={setValue}
               errors={errors}
               exercise={EXERCISES[exerciseIndex]}
+              isInjured={injuredMap[EXERCISES[exerciseIndex].weightField] ?? false}
+              onToggleInjured={() => toggleInjured(EXERCISES[exerciseIndex].weightField)}
             />
           )}
           {isDone && <StepDone />}

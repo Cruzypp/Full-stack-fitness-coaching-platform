@@ -1,33 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
-import { google } from "googleapis"
-import { createClient } from "@supabase/supabase-js"
 import { tr, trItems } from "@/app/lib/translations"
 import { getSupabaseAdmin } from "@/lib/supabase-admin"
 
-const SHEET_ID = process.env.GOOGLE_SHEET_ID!
-
-// ── Cliente Google Sheets ───────────────────────────────────────────────────
-
-/**
- * Las variables de entorno de Vercel escapan los saltos de línea como \\n literal.
- * Esta función los convierte a \n real para que la clave privada sea válida.
- */
-function getPrivateKey(): string {
-  const key = process.env.GOOGLE_PRIVATE_KEY ?? ""
-  return key.includes("\\n") ? key.replace(/\\n/g, "\n") : key
-}
-
-/** Devuelve un cliente autenticado de la API de Google Sheets v4. */
-async function getSheets() {
-  const auth = new google.auth.GoogleAuth({
-    credentials: {
-      client_email: process.env.GOOGLE_CLIENT_EMAIL,
-      private_key: getPrivateKey(),
-    },
-    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-  })
-  return google.sheets({ version: "v4", auth })
-}
+const PYTHON_API_URL = "https://pythonactions.cruzdomain.cloud/onboarding"
 
 // ── Utilidades de formato ───────────────────────────────────────────────────
 
@@ -51,96 +26,19 @@ function fmt(val: unknown): string {
   return String(val)
 }
 
-/**
- * Construye un arreglo posicional para una fila del sheet a partir de un mapa de encabezados.
- * Solo escribe en las columnas cuyo encabezado exista en `data`; las demás quedan vacías.
- * Esto permite agregar o reordenar columnas en el sheet sin romper la lógica.
- */
-function buildRow(headerMap: Map<string, number>, data: Record<string, string>): string[] {
-  const row = new Array(headerMap.size).fill("")
-  for (const [col, val] of Object.entries(data)) {
-    const idx = headerMap.get(col)
-    if (idx !== undefined) row[idx] = val
-  }
-  return row
-}
-
-/**
- * Upsert de una fila en una pestaña del sheet.
- *
- * Estrategia:
- * 1. Lee todas las filas de la pestaña.
- * 2. Busca un registro existente comparando la columna "Número" con el teléfono del usuario.
- * 3. Si encuentra coincidencia → actualiza esa fila en su posición original.
- * 4. Si no hay coincidencia → agrega una fila nueva al final.
- *
- * Nota: Las filas en Sheets API son 1-indexed y la fila 1 siempre son los encabezados,
- * por eso se suma +1 al índice del arreglo para obtener el número real de fila.
- */
-async function upsertRow(
-  sheets: Awaited<ReturnType<typeof getSheets>>,
-  tab: string,
-  data: Record<string, string>,
-  phone: string
-) {
-  const res = await sheets.spreadsheets.values.get({
-    spreadsheetId: SHEET_ID,
-    range: `${tab}`,
-  })
-
-  const allRows: string[][] = res.data.values ?? []
-  const headers = allRows[0] ?? []
-  const headerMap = new Map(headers.map((h, i) => [h.trim(), i]))
-  const row = buildRow(headerMap, data)
-
-  const phoneColIdx = headerMap.get("Número")
-
-  let existingRowIndex = -1
-  if (phoneColIdx !== undefined && phone) {
-    for (let i = 1; i < allRows.length; i++) {
-      if ((allRows[i][phoneColIdx] ?? "").trim() === phone.trim()) {
-        existingRowIndex = i
-        break
-      }
-    }
-  }
-
-  if (existingRowIndex !== -1) {
-    // Actualizar fila existente (+1 porque Sheets es 1-indexed)
-    const sheetRow = existingRowIndex + 1
-    await sheets.spreadsheets.values.update({
-      spreadsheetId: SHEET_ID,
-      range: `${tab}!A${sheetRow}`,
-      valueInputOption: "USER_ENTERED",
-      requestBody: { values: [row] },
-    })
-  } else {
-    // Agregar nueva fila al final
-    await sheets.spreadsheets.values.append({
-      spreadsheetId: SHEET_ID,
-      range: `${tab}!A1`,
-      valueInputOption: "USER_ENTERED",
-      requestBody: { values: [row] },
-    })
-  }
-}
-
 // ── Endpoint POST /api/sheets ───────────────────────────────────────────────
 
 /**
- * Recibe los datos del onboarding y los escribe en Google Sheets.
+ * Recibe los datos del onboarding, construye los arrays posicionales
+ * que espera el endpoint Python y los envía a pythonactions.cruzdomain.cloud/onboarding.
  *
- * Pestañas que se escriben:
- * - "Entrenamiento": siempre — contiene métricas corporales (peso, estatura, composición).
- * - "Nutriología": solo si `wantsNutritionPlan === true` — incluye todos los datos de alimentación.
- *
- * Ambas escrituras se ejecutan en paralelo con Promise.all para reducir latencia.
+ * Arrays enviados:
+ * - entrenamiento: 18 valores — siempre se escribe
+ * - nutriologia:   44 valores — solo si wantsNutritionPlan === true
  */
 export async function POST(req: NextRequest) {
-  console.log("Environment keys available:", Object.keys(process.env).filter(k => k.includes("SUPABASE") || k.includes("GOOGLE")))
   try {
     const data = await req.json()
-    const sheets = await getSheets()
 
     const fecha = new Date().toLocaleDateString("es-MX", { timeZone: "America/Mexico_City" })
     const isManual = data.manualMetrics === true
@@ -157,72 +55,96 @@ export async function POST(req: NextRequest) {
       telefono = meta.phone ?? userData?.user?.phone ?? ""
     }
 
-    // Campos de métricas corporales (compartidos por ambas pestañas)
-    const metricsData: Record<string, string> = {
-      "Fecha":               fecha,
-      "Usuario ID":          fmt(data.userId),
-      "Nombre":              nombre,
-      "Número":              telefono,
-      // "Manual" muestra circunferencias; "InBody" muestra composición corporal
-      "Modo Medición":       isManual ? "Manual" : "InBody",
-      "Estatura (cm)":       fmt(data.height),
-      "Peso (kg)":           fmt(data.weight),
-      "Cintura (cm)":        isManual ? fmt(data.waist)      : "",
-      "Cadera (cm)":         isManual ? fmt(data.hip)        : "",
-      "Brazo (cm)":          isManual ? fmt(data.arm)        : "",
-      "Muñeca (cm)":         isManual ? fmt(data.wrist)      : "",
-      "Altura Rodilla (cm)": isManual ? fmt(data.kneeHeight) : "",
-      "Pantorrilla (cm)":    isManual ? fmt(data.calf)       : "",
-      "IMC":                 isManual ? "" : fmt(data.imc),
-      "% Grasa Corporal":    isManual ? "" : fmt(data.fatPercentage),
-      "Masa Muscular (kg)":  isManual ? "" : fmt(data.musclePercentage),
-      "Nivel Grasa Visceral":isManual ? "" : fmt(data.viceralFatPercentage),
-      "Agua Corporal (L)":   isManual ? "" : fmt(data.bodyWaterPercentage),
-      "Minerales Óseos (kg)":isManual ? "" : fmt(data.boneMass),
-    }
+    // Métricas corporales compartidas (usadas en ambas hojas)
+    const modoMedicion = isManual ? "Manual" : "InBody"
+    const estatura     = fmt(data.height)
+    const peso         = fmt(data.weight)
+    const cintura      = isManual ? fmt(data.waist)      : ""
+    const cadera       = isManual ? fmt(data.hip)        : ""
+    const brazo        = isManual ? fmt(data.arm)        : ""
+    const muneca       = isManual ? fmt(data.wrist)      : ""
+    const altRodilla   = isManual ? fmt(data.kneeHeight) : ""
+    const pantorrilla  = isManual ? fmt(data.calf)       : ""
+    const imc          = isManual ? "" : fmt(data.imc)
+    const grasa        = isManual ? "" : fmt(data.fatPercentage)
+    const musculo      = isManual ? "" : fmt(data.musclePercentage)
+    const grasaVisc    = isManual ? "" : fmt(data.viceralFatPercentage)
+    const aguaCorp     = isManual ? "" : fmt(data.bodyWaterPercentage)
+    const minerales    = isManual ? "" : fmt(data.boneMass)
 
-    const ops: Promise<void>[] = [
-      upsertRow(sheets, "Entrenamiento", metricsData, telefono),
+    // Entrenamiento: 18 columnas (A:R)
+    // Orden: Fecha, Nombre, Número, Modo Medición, Estatura, Peso, Cintura, Cadera,
+    //        Brazo, Muñeca, Altura Rodilla, Pantorrilla, IMC, % Grasa, Masa Muscular,
+    //        Grasa Visceral, Agua Corporal, Minerales Óseos
+    const entrenamiento = [
+      fecha, nombre, telefono, modoMedicion,
+      estatura, peso,
+      cintura, cadera, brazo, muneca, altRodilla, pantorrilla,
+      imc, grasa, musculo, grasaVisc, aguaCorp, minerales,
     ]
 
-    if (wantsNutrition) {
-      const nutriData: Record<string, string> = {
-        ...metricsData,
-        "Plan Nutrición":        "Sí",
-        "Agua (L)":              fmt(data.consumedWater),
-        "Horas Sueño":           fmt(data.restHours),
-        "Comidas/Día":           fmt(data.mealTimes),
-        "Toma Medicamentos":     data.takesMedication === true ? "Sí" : data.takesMedication === false ? "No" : "",
-        "Medicamentos":          fmt(data.medication),
-        "Otro Medicamento":      fmt(data.otherMedication),
-        "Toma Suplementos":      data.takesSupplements === true ? "Sí" : data.takesSupplements === false ? "No" : "",
-        "Suplementos":           fmt(data.takesSumplements),
-        "Otro Suplemento":       fmt(data.otherSuplement),
-        "Alcohol":               tr(data.consumesAlcohol),
-        "Tabaco":                tr(data.consumesTobacco),
-        "Condiciones Médicas":   fmt(data.conditions),
-        "Otras Condiciones":     fmt(data.otherConditions),
-        "Síntomas":              fmt(data.symptoms),
-        "Otros Síntomas":        fmt(data.otherSymptoms),
-        "Frutas":                fmt(data.fruits),
-        "Frecuencia Frutas":     tr(data.fruitsFrequency),
-        "Verduras":              fmt(data.vegetables),
-        "Frecuencia Verduras":   tr(data.vegetablesFrequency),
-        "Condimentos":           fmt(trItems(data.condiments)),
-        "Azúcares":              fmt(trItems(data.sugar)),
-        "Grasas":                fmt(trItems(data.fat)),
-        "Bebidas":               fmt(trItems(data.drinks)),
-        "Alimentos Favoritos":   fmt(data.favoriteFoods),
-        "Otros Favoritos":       fmt(data.otherFavoriteFoods),
-        "Alimentos No Favoritos":fmt(data.noFavoriteFoods),
-      }
-      ops.push(upsertRow(sheets, "Nutriología", nutriData, telefono))
+    // Nutriología: 44 columnas (A:AR) — solo si el usuario quiere plan de nutrición
+    // Orden: Fecha, Número, Nombre, Agua (L), Horas Sueño, Comidas/Día,
+    //        Toma Medicamentos, Medicamentos, Otro Medicamento,
+    //        Toma Suplementos, Suplementos, Otro Suplemento,
+    //        Alcohol, Tabaco, Condiciones Médicas, Otras Condiciones,
+    //        Síntomas, Otros Síntomas, Frutas, Frecuencia Frutas,
+    //        Verduras, Frecuencia Verduras, Condimentos, Azúcares, Grasas, Bebidas,
+    //        Alimentos Favoritos, Otros Favoritos, Alimentos No Favoritos,
+    //        Modo Medición, Estatura, Peso, Cintura, Cadera, Brazo, Muñeca,
+    //        Altura Rodilla, Pantorrilla, IMC, % Grasa, Masa Muscular,
+    //        Grasa Visceral, Agua Corporal, Minerales Óseos
+    const nutriologia = wantsNutrition ? [
+      fecha, telefono, nombre,
+      fmt(data.consumedWater),
+      fmt(data.restHours),
+      fmt(data.mealTimes),
+      data.takesMedication === true ? "Sí" : data.takesMedication === false ? "No" : "",
+      fmt(data.medication),
+      fmt(data.otherMedication),
+      data.takesSupplements === true ? "Sí" : data.takesSupplements === false ? "No" : "",
+      fmt(data.takesSumplements),
+      fmt(data.otherSuplement),
+      tr(data.consumesAlcohol),
+      tr(data.consumesTobacco),
+      fmt(data.conditions),
+      fmt(data.otherConditions),
+      fmt(data.symptoms),
+      fmt(data.otherSymptoms),
+      fmt(data.fruits),
+      tr(data.fruitsFrequency),
+      fmt(data.vegetables),
+      tr(data.vegetablesFrequency),
+      fmt(trItems(data.condiments)),
+      fmt(trItems(data.sugar)),
+      fmt(trItems(data.fat)),
+      fmt(trItems(data.drinks)),
+      fmt(data.favoriteFoods),
+      fmt(data.otherFavoriteFoods),
+      fmt(data.noFavoriteFoods),
+      modoMedicion,
+      estatura, peso,
+      cintura, cadera, brazo, muneca, altRodilla, pantorrilla,
+      imc, grasa, musculo, grasaVisc, aguaCorp, minerales,
+    ] : []
+
+    console.log("[sheets] entrenamiento:", entrenamiento)
+    console.log("[sheets] nutriologia length:", nutriologia.length)
+
+    const res = await fetch(PYTHON_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ entrenamiento, nutriologia }),
+    })
+
+    if (!res.ok) {
+      const detail = await res.text()
+      throw new Error(`Python API error ${res.status}: ${detail}`)
     }
 
-    await Promise.all(ops)
     return NextResponse.json({ ok: true })
   } catch (error) {
     console.error("Error en /api/sheets:", error)
-    return NextResponse.json({ error: "No se pudo escribir en Google Sheets" }, { status: 500 })
+    return NextResponse.json({ error: String(error) }, { status: 500 })
   }
 }
