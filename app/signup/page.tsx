@@ -57,9 +57,12 @@ function SignupContent() {
       return;
     }
 
+    const capitalize = (str: string) =>
+      str.trim().split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
+
     const metadata: any = {
-      first_name: formData.firstName,
-      last_name: formData.lastName,
+      first_name: capitalize(formData.firstName),
+      last_name: capitalize(formData.lastName),
       phone: formData.phone,
       role: 'student',
     };
