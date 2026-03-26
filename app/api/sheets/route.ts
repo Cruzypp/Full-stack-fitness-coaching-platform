@@ -128,9 +128,6 @@ export async function POST(req: NextRequest) {
       imc, grasa, musculo, grasaVisc, aguaCorp, minerales,
     ] : []
 
-    console.log("[sheets] entrenamiento:", entrenamiento)
-    console.log("[sheets] nutriologia length:", nutriologia.length)
-
     const res = await fetch(PYTHON_API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
