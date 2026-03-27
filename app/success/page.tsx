@@ -39,7 +39,7 @@ function SuccessContent() {
   }, [sessionId])
 
   // Coach WhatsApp configuration
-  const COACH_PHONE = "524626290658" // Reemplaza esto con el número real de WhatsApp del Coach
+  const COACH_PHONE = "528180272994"
   const waMessage = encodeURIComponent(`¡Hola Coach! Soy ${userName || 'un nuevo alumno'}, acabo de unirme al programa THE ON3 P3RCENT.`)
   const whatsappUrl = `https://wa.me/${COACH_PHONE}?text=${waMessage}`
 
