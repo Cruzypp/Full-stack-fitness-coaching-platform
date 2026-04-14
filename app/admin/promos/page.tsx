@@ -19,6 +19,7 @@ const AdminPromosPage = () => {
     discountPercent: "",
     durationHours: "",
     startsAt: "",
+    maxRedemptions: "",
   });
 
   const [prices, setPrices] = useState<any[]>([]);
@@ -83,6 +84,8 @@ const AdminPromosPage = () => {
     setSuccess("");
 
     try {
+      const maxRed = formData.maxRedemptions ? Number(formData.maxRedemptions) : undefined;
+
       // 1. Save to database (Supabase)
       await createPromotion({
         code: formData.code,
@@ -91,14 +94,16 @@ const AdminPromosPage = () => {
         discountPercent: Number(formData.discountPercent),
         durationHours: Number(formData.durationHours),
         startsAt: new Date(formData.startsAt),
+        maxRedemptions: maxRed,
       });
 
-      // 2. Generate same coupon in Stripe 
+      // 2. Generate same coupon in Stripe
       const stripeRes = await createStripeCoupon({
         code: formData.code,
         discountPercent: Number(formData.discountPercent),
         name: formData.title,
-        duration: 'once'
+        duration: 'once',
+        maxRedemptions: maxRed,
       });
 
       if (!stripeRes.success) {
@@ -118,6 +123,7 @@ const AdminPromosPage = () => {
         discountPercent: "",
         durationHours: "",
         startsAt: "",
+        maxRedemptions: "",
       });
     } catch (err: any) {
       setError(err.message || "Ocurrió un error al crear la promoción");
@@ -142,6 +148,9 @@ const AdminPromosPage = () => {
           </span>
           <Link href="/admin/dashboard" className="font-label text-[10px] md:text-xs uppercase tracking-[0.15em] text-muted-foreground hover:text-foreground transition-colors">
             Dashboard
+          </Link>
+          <Link href="/admin/vidas" className="font-label text-[10px] md:text-xs uppercase tracking-[0.15em] text-muted-foreground hover:text-foreground transition-colors">
+            Vidas
           </Link>
           <button
             onClick={handleLogout}
@@ -312,6 +321,22 @@ const AdminPromosPage = () => {
                     onChange={handleChange}
                     required
                     className="w-full px-4 py-3 bg-secondary/30 border border-border/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all font-body text-foreground placeholder:text-muted-foreground/30 [color-scheme:dark]"
+                  />
+                </div>
+
+                {/* Max Redemptions */}
+                <div className="space-y-2">
+                  <label className="font-label text-xs uppercase tracking-[0.15em] text-muted-foreground ml-1">
+                    Máx. Usos <span className="normal-case tracking-normal font-body text-muted-foreground/50">(opcional)</span>
+                  </label>
+                  <input
+                    type="number"
+                    name="maxRedemptions"
+                    value={formData.maxRedemptions}
+                    onChange={handleChange}
+                    min="1"
+                    placeholder="Sin límite"
+                    className="w-full px-4 py-3 bg-secondary/30 border border-border/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all font-body text-foreground placeholder:text-muted-foreground/30"
                   />
                 </div>
               </div>
