@@ -25,6 +25,11 @@ export type CreatePromoProps = {
    * Si duration es 'repeating', por cuántos meses aplica el descuento.
    */
   durationInMonths?: number;
+  /**
+   * Número máximo de veces que el cupón puede ser canjeado en total.
+   * Si no se especifica, no hay límite.
+   */
+  maxRedemptions?: number;
 }
 
 /**
@@ -39,7 +44,8 @@ export async function createStripeCoupon(params: CreatePromoProps) {
       discountPercent,
       name = `Promo: ${code}`,
       duration = 'once',
-      durationInMonths
+      durationInMonths,
+      maxRedemptions
     } = params;
 
     // 1. Verificamos si el cupón ya existe para evitar errores de duplicidad
@@ -70,6 +76,10 @@ export async function createStripeCoupon(params: CreatePromoProps) {
 
     if (duration === 'repeating' && durationInMonths) {
       couponParams.duration_in_months = durationInMonths;
+    }
+
+    if (maxRedemptions != null && maxRedemptions > 0) {
+      couponParams.max_redemptions = maxRedemptions;
     }
 
     const newCoupon = await stripe.coupons.create(couponParams);

@@ -67,6 +67,9 @@ export default function AdminDashboardPage() {
           <span className="font-label text-[10px] md:text-xs uppercase tracking-[0.15em] text-primary">
             Dashboard
           </span>
+          <Link href="/admin/vidas" className="font-label text-[10px] md:text-xs uppercase tracking-[0.15em] text-muted-foreground hover:text-foreground transition-colors">
+            Vidas
+          </Link>
           <button
             onClick={handleLogout}
             className="font-label text-[10px] md:text-xs uppercase tracking-[0.15em] text-muted-foreground hover:text-foreground transition-colors ml-2 md:ml-0"
