@@ -22,10 +22,11 @@ const PERCENTAGES = [50, 60, 70, 75, 80, 85, 90, 95, 100];
 interface PrRecord {
   id: string;
   exercise: string;
-  weight_kg: number;
+  weight_kg: number | null;
   reps: number | null;
   sensation: string | null;
   recorded_at: string;
+  injured: boolean | null;
 }
 
 export default function MisCargas() {
@@ -55,8 +56,15 @@ export default function MisCargas() {
       .order("recorded_at", { ascending: false })
       .then(({ data, error }) => {
         if (error) console.error("[mis-cargas] Error querying pr_records:", error);
-        console.log("[mis-cargas] user_id:", user.id, "| records:", data);
-        setRecords(data || []);
+        // Quedarse solo con el PR más reciente por ejercicio
+        const rows = (data || []) as PrRecord[];
+        const latest = Object.values(
+          rows.reduce((acc, r) => {
+            if (!acc[r.exercise]) acc[r.exercise] = r;
+            return acc;
+          }, {} as Record<string, PrRecord>)
+        );
+        setRecords(latest);
         setLoadingData(false);
       });
   }, [user]);
@@ -154,63 +162,77 @@ export default function MisCargas() {
             animate={{ opacity: 1, y: 0 }}
             className="space-y-8"
           >
-            {records.map((record) => (
-              <div key={record.id} className="rounded-2xl border border-border overflow-hidden">
-                {/* Exercise header */}
-                <div className="px-4 py-3 border-b border-border bg-muted/30 flex items-center justify-between">
-                  <p className="text-sm font-bold uppercase tracking-wide text-foreground">{record.exercise}</p>
-                  <div className="text-right">
-                    <p className="text-xl font-bold text-foreground">{record.weight_kg} kg</p>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
-                      {record.reps ? `${record.reps}RM` : "1RM"}
-                    </p>
-                  </div>
-                </div>
+            {records.map((record) => {
+              const isInjured = record.injured === true || record.sensation === 'Lesionado';
 
-                {/* Percentages table */}
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="text-[10px] uppercase tracking-widest text-center w-20">%</TableHead>
-                      <TableHead className="text-[10px] uppercase tracking-widest text-center">Peso (kg)</TableHead>
-                      <TableHead className="text-[10px] uppercase tracking-widest text-center hidden md:table-cell">Referencia</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {PERCENTAGES.map((pct) => {
-                      const weight = Math.round(record.weight_kg * (pct / 100));
-                      const isSelected = selectedRows[record.id] === pct;
-                      return (
-                        <TableRow
-                          key={pct}
-                          onClick={() => toggleRow(record.id, pct)}
-                          className={`cursor-pointer transition-colors ${
-                            isSelected
-                              ? "bg-green-500/15 hover:bg-green-500/20"
-                              : pct === 100
-                              ? "bg-primary/5 hover:bg-primary/10"
-                              : "hover:bg-muted/30"
-                          }`}
-                        >
-                          <TableCell className="text-xs text-white text-center">{pct}%</TableCell>
-                          <TableCell className={`text-sm text-center font-semibold ${isSelected ? "text-green-400" : ""}`}>
-                            {weight} kg
-                          </TableCell>
-                          <TableCell className="hidden md:table-cell text-center">
-                            <div className="w-full max-w-48 h-1.5 rounded-full bg-muted overflow-hidden mx-auto">
-                              <div
-                                className={`h-full rounded-full transition-colors ${isSelected ? "bg-green-500" : "bg-foreground"}`}
-                                style={{ width: `${pct}%` }}
-                              />
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </div>
-            ))}
+              if (isInjured) {
+                return (
+                  <div key={record.id} className="rounded-2xl border border-destructive/30 bg-destructive/5 px-4 py-4 flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-lg">🤕</span>
+                      <p className="text-sm font-bold uppercase tracking-wide text-foreground">{record.exercise}</p>
+                    </div>
+                    <span className="text-xs font-label uppercase tracking-[0.15em] text-destructive">Lesionado</span>
+                  </div>
+                );
+              }
+
+              return (
+                <div key={record.id} className="rounded-2xl border border-border overflow-hidden">
+                  {/* Exercise header */}
+                  <div className="px-4 py-3 border-b border-border bg-muted/30 flex items-center justify-between">
+                    <p className="text-sm font-bold uppercase tracking-wide text-foreground">{record.exercise}</p>
+                    <div className="text-right">
+                      <p className="text-xl font-bold text-foreground">{record.weight_kg} kg</p>
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
+                        {record.reps ? `${record.reps}RM` : "1RM"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Percentages table */}
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-[10px] uppercase tracking-widest text-center w-20">%</TableHead>
+                        <TableHead className="text-[10px] uppercase tracking-widest text-center">Peso (kg)</TableHead>
+                        <TableHead className="text-[10px] uppercase tracking-widest text-center hidden md:table-cell">Referencia</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {PERCENTAGES.map((pct) => {
+                        const weight = Math.round((record.weight_kg as number) * (pct / 100));
+                        const isSelected = selectedRows[record.id] === pct;
+                        return (
+                          <TableRow
+                            key={pct}
+                            onClick={() => toggleRow(record.id, pct)}
+                            className={`cursor-pointer transition-colors ${
+                              isSelected
+                                ? "bg-green-500/15 hover:bg-green-500/20"
+                                : "hover:bg-muted/30"
+                            }`}
+                          >
+                            <TableCell className="text-xs text-white text-center">{pct}%</TableCell>
+                            <TableCell className={`text-sm text-center font-semibold ${isSelected ? "text-green-400" : ""}`}>
+                              {weight} kg
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell text-center">
+                              <div className="w-full max-w-48 h-1.5 rounded-full bg-muted overflow-hidden mx-auto">
+                                <div
+                                  className={`h-full rounded-full transition-colors ${isSelected ? "bg-green-500" : "bg-foreground"}`}
+                                  style={{ width: `${pct}%` }}
+                                />
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              );
+            })}
           </motion.div>
         )}
       </div>

@@ -24,19 +24,24 @@ interface PromotionProps {
   discountPercent: number;
   durationHours: number;
   startsAt: Date;
+  maxRedemptions?: number;
 }
 export async function createPromotion(props: PromotionProps) {
   const promoPrice = +(props.originalPrice * (1 - props.discountPercent / 100)).toFixed(2);
+  const insertData: Record<string, any> = {
+    code: props.code.toLowerCase(),
+    title: props.title,
+    original_price: props.originalPrice,
+    promo_price: promoPrice,
+    duration_hours: props.durationHours,
+    starts_at: props.startsAt.toISOString(),
+  };
+  if (props.maxRedemptions != null) {
+    insertData.max_redemptions = props.maxRedemptions;
+  }
   const { data, error } = await supabase
     .from('promotions')
-    .insert({
-      code: props.code.toLowerCase(),
-      title: props.title,
-      original_price: props.originalPrice,
-      promo_price: promoPrice,
-      duration_hours: props.durationHours,
-      starts_at: props.startsAt.toISOString()
-    })
+    .insert(insertData)
     .select()
     .single()
 

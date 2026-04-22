@@ -17,7 +17,6 @@ export default function StepIntro() {
           { day: 'Lunes', exercise: 'Back Squat', type: '1RM' },
           { day: 'Martes', exercise: 'Bench Press', type: '1RM' },
           { day: 'Jueves', exercise: 'Shoulder Press', type: '1RM' },
-          { day: 'Jueves', exercise: 'Pull / Row', type: '5RM técnico' },
           { day: 'Viernes', exercise: 'Deadlift', type: '1RM' },
         ].map(({ day, exercise, type }) => (
           <div
@@ -34,10 +33,6 @@ export default function StepIntro() {
           </div>
         ))}
       </div>
-
-      <p className="text-xs text-foreground/40 leading-relaxed">
-        No entrenes al fallo. Si dudas con el peso, bájale.
-      </p>
     </div>
   );
 }

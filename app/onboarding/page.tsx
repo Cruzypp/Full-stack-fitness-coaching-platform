@@ -159,8 +159,6 @@ export default function OnboardingPage() {
       }
       : data
 
-    console.log("📋 Onboarding submit:", payload)
-
     setSubmitting(true)
     try {
       const res = await fetch("/api/sheets", {
