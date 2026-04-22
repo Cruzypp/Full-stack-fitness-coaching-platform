@@ -6,12 +6,13 @@ const admin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const body = await req.json()
   const { data, error } = await admin
     .from('body_measurements')
     .update(body)
-    .eq('id', params.id)
+    .eq('id', id)
     .select()
     .single()
 
@@ -19,8 +20,9 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   return NextResponse.json(data)
 }
 
-export async function DELETE(_: NextRequest, { params }: { params: { id: string } }) {
-  const { error } = await admin.from('body_measurements').delete().eq('id', params.id)
+export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const { error } = await admin.from('body_measurements').delete().eq('id', id)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ success: true })
 }

@@ -6,16 +6,14 @@ const admin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: { id: string; entryId: string } }
-) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string; entryId: string }> }) {
+  const { id, entryId } = await params
   const body = await req.json()
   const { data, error } = await admin
     .from('meal_plan_entries')
     .update(body)
-    .eq('id', params.entryId)
-    .eq('meal_plan_id', params.id)
+    .eq('id', entryId)
+    .eq('meal_plan_id', id)
     .select()
     .single()
 
@@ -23,15 +21,13 @@ export async function PUT(
   return NextResponse.json(data)
 }
 
-export async function DELETE(
-  _: NextRequest,
-  { params }: { params: { id: string; entryId: string } }
-) {
+export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id: string; entryId: string }> }) {
+  const { id, entryId } = await params
   const { error } = await admin
     .from('meal_plan_entries')
     .delete()
-    .eq('id', params.entryId)
-    .eq('meal_plan_id', params.id)
+    .eq('id', entryId)
+    .eq('meal_plan_id', id)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ success: true })
