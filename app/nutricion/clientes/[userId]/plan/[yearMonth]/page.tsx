@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import {
@@ -334,6 +334,29 @@ export default function PlanPage() {
 
   const handleLogout = async () => { await supabase.auth.signOut(); router.push("/login") }
 
+  const macros = useMemo(() => {
+    const totals = { calories: 0, protein: 0, carbs: 0, fats: 0, days: new Set<number>() }
+    for (const e of entries) {
+      totals.calories += e.calories ?? 0
+      totals.protein += e.protein_g ?? 0
+      totals.carbs += e.carbs_g ?? 0
+      totals.fats += e.fats_g ?? 0
+      totals.days.add(e.day_of_month)
+    }
+    const daysWithData = totals.days.size || 1
+    return {
+      calories: Math.round(totals.calories),
+      protein: Math.round(totals.protein * 10) / 10,
+      carbs: Math.round(totals.carbs * 10) / 10,
+      fats: Math.round(totals.fats * 10) / 10,
+      avgCalories: Math.round(totals.calories / daysWithData),
+      avgProtein: Math.round((totals.protein / daysWithData) * 10) / 10,
+      avgCarbs: Math.round((totals.carbs / daysWithData) * 10) / 10,
+      avgFats: Math.round((totals.fats / daysWithData) * 10) / 10,
+      daysWithData,
+    }
+  }, [entries])
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-slate-50">
@@ -357,7 +380,6 @@ export default function PlanPage() {
             <Link href="/nutricion/recetas" className="font-label text-[10px] uppercase tracking-[0.15em] text-slate-500 hover:text-slate-900 transition-colors">Recetas</Link>
           </div>
           <div className="flex items-center gap-4">
-            <Link href="/admin/dashboard" className="font-label text-[10px] uppercase tracking-[0.15em] text-slate-400 hover:text-slate-700 transition-colors">Panel Admin</Link>
             <button onClick={handleLogout} className="font-label text-[10px] uppercase tracking-[0.15em] text-slate-400 hover:text-slate-700 transition-colors">Cerrar Sesión</button>
           </div>
         </nav>
@@ -419,6 +441,64 @@ export default function PlanPage() {
                 </Link>
               </div>
             </header>
+
+            {/* Macro dashboard */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+              {[
+                {
+                  label: "Calorías totales",
+                  value: macros.calories > 0 ? macros.calories.toLocaleString("es-MX") : "—",
+                  unit: "kcal",
+                  avg: macros.calories > 0 ? `${macros.avgCalories.toLocaleString("es-MX")} kcal/día` : null,
+                  bg: "bg-amber-50 border-amber-200",
+                  bar: "bg-amber-400",
+                  text: "text-amber-700",
+                },
+                {
+                  label: "Proteína total",
+                  value: macros.protein > 0 ? macros.protein.toLocaleString("es-MX") : "—",
+                  unit: "g",
+                  avg: macros.protein > 0 ? `${macros.avgProtein} g/día` : null,
+                  bg: "bg-blue-50 border-blue-200",
+                  bar: "bg-blue-400",
+                  text: "text-blue-700",
+                },
+                {
+                  label: "Carbohidratos total",
+                  value: macros.carbs > 0 ? macros.carbs.toLocaleString("es-MX") : "—",
+                  unit: "g",
+                  avg: macros.carbs > 0 ? `${macros.avgCarbs} g/día` : null,
+                  bg: "bg-orange-50 border-orange-200",
+                  bar: "bg-orange-400",
+                  text: "text-orange-700",
+                },
+                {
+                  label: "Grasas total",
+                  value: macros.fats > 0 ? macros.fats.toLocaleString("es-MX") : "—",
+                  unit: "g",
+                  avg: macros.fats > 0 ? `${macros.avgFats} g/día` : null,
+                  bg: "bg-rose-50 border-rose-200",
+                  bar: "bg-rose-400",
+                  text: "text-rose-700",
+                },
+              ].map((m) => (
+                <div key={m.label} className={`rounded-xl border ${m.bg} p-4 flex flex-col gap-1`}>
+                  <span className={`font-label text-[9px] uppercase tracking-[0.15em] ${m.text}`}>{m.label}</span>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="font-bebas text-3xl text-slate-900">{m.value}</span>
+                    {m.value !== "—" && <span className={`font-label text-[10px] ${m.text}`}>{m.unit}</span>}
+                  </div>
+                  {m.avg && (
+                    <span className="font-label text-[8px] uppercase tracking-[0.1em] text-slate-400 mt-0.5">
+                      Prom: {m.avg} · {macros.daysWithData} días con datos
+                    </span>
+                  )}
+                  {!m.avg && (
+                    <span className="font-label text-[8px] text-slate-300 mt-0.5">Sin entradas aún</span>
+                  )}
+                </div>
+              ))}
+            </div>
 
             <div className="overflow-x-auto">
               <table className="w-full border-collapse" style={{ minWidth: 700 }}>
