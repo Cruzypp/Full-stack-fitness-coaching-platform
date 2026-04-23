@@ -259,6 +259,8 @@ export default function PlanPage() {
   const [activeRecipe, setActiveRecipe] = useState<Recipe | null>(null)
   const [editingEntry, setEditingEntry] = useState<MealPlanEntry | null>(null)
   const [clientName, setClientName] = useState("")
+  const [clientPhone, setClientPhone] = useState<string | null>(null)
+  const [exportingPdf, setExportingPdf] = useState(false)
 
   const daysInMonth = getDaysInMonth(yearMonth)
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
@@ -267,13 +269,14 @@ export default function PlanPage() {
     const load = async () => {
       const [recipesRes, profileRes, planRes] = await Promise.all([
         fetch("/api/nutrition/recipes").then((r) => r.json()),
-        supabase.from("profiles").select("first_name, last_name").eq("id", userId).single(),
+        supabase.from("profiles").select("first_name, last_name, phone").eq("id", userId).single(),
         fetch(`/api/nutrition/meal-plans?userId=${userId}&yearMonth=${yearMonth}`).then((r) => r.json()),
       ])
 
       setRecipes(recipesRes)
       if (profileRes.data) {
         setClientName(`${profileRes.data.first_name} ${profileRes.data.last_name}`)
+        setClientPhone(profileRes.data.phone ?? null)
       }
 
       let currentPlan: MealPlan | null = null
@@ -377,6 +380,41 @@ export default function PlanPage() {
 
   const filteredRecipes = recipeFilter === "todas" ? recipes : recipes.filter((r) => r.category === recipeFilter)
 
+  const handleExportPdf = async () => {
+    if (!plan) return
+    setExportingPdf(true)
+    try {
+      const res = await fetch(`/api/nutrition/meal-plans/${plan.id}/pdf`)
+      if (!res.ok) throw new Error("Error generando PDF")
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `plan_${clientName.replace(/\s+/g, "_").toLowerCase()}_${yearMonth}.pdf`
+      a.click()
+      URL.revokeObjectURL(url)
+    } finally {
+      setExportingPdf(false)
+    }
+  }
+
+  const handleWhatsapp = async () => {
+    if (!plan) return
+    // Download PDF in parallel
+    handleExportPdf()
+    // Build wa.me link with phone
+    const rawPhone = clientPhone ?? ""
+    const cleanPhone = rawPhone.replace(/\D/g, "")
+    const [, month] = yearMonth.split("-")
+    const monthLabel = new Date(Number(yearMonth.split("-")[0]), Number(month) - 1, 1)
+      .toLocaleDateString("es-MX", { month: "long", year: "numeric" })
+    const msg = encodeURIComponent(
+      `Hola ${clientName.split(" ")[0]}! 👋 Aquí está tu plan de nutrición de ${monthLabel}. Te comparto el PDF con todas tus comidas del mes. Cualquier duda me dices! 💪`
+    )
+    const waUrl = cleanPhone ? `https://wa.me/${cleanPhone}?text=${msg}` : `https://wa.me/?text=${msg}`
+    window.open(waUrl, "_blank")
+  }
+
   const handleLogout = async () => {
     await supabase.auth.signOut()
     router.push("/login")
@@ -459,7 +497,7 @@ export default function PlanPage() {
                   Doble clic en una entrada para editarla
                 </p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Link
                   href={`/admin/nutricion/clientes/${userId}/plan/${getPrevMonth(yearMonth)}`}
                   className="px-3 py-1.5 rounded-xl border border-border/20 font-label text-[9px] uppercase tracking-[0.1em] text-muted-foreground hover:text-foreground transition-colors"
@@ -472,6 +510,20 @@ export default function PlanPage() {
                 >
                   Siguiente →
                 </Link>
+                <button
+                  onClick={handleExportPdf}
+                  disabled={exportingPdf || !plan}
+                  className="px-3 py-1.5 rounded-xl border border-primary/30 font-label text-[9px] uppercase tracking-[0.1em] text-primary hover:bg-primary/10 transition-colors disabled:opacity-40"
+                >
+                  {exportingPdf ? "Generando..." : "↓ PDF"}
+                </button>
+                <button
+                  onClick={handleWhatsapp}
+                  disabled={!plan}
+                  className="px-3 py-1.5 rounded-xl bg-[#25D366]/10 border border-[#25D366]/30 font-label text-[9px] uppercase tracking-[0.1em] text-[#25D366] hover:bg-[#25D366]/20 transition-colors disabled:opacity-40"
+                >
+                  WhatsApp
+                </button>
               </div>
             </header>
 
