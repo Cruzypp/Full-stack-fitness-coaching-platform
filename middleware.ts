@@ -27,15 +27,17 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  // ── Proteger /admin/* ──────────────────────────────
-  if (request.nextUrl.pathname.startsWith('/admin')) {
+  // ── Proteger /admin/* y /nutricion/* ─────────────────
+  const isProtectedAdmin =
+    request.nextUrl.pathname.startsWith('/admin') ||
+    request.nextUrl.pathname.startsWith('/nutricion')
+
+  if (isProtectedAdmin) {
     if (!user) {
-      // No hay sesión → manda a login
       return NextResponse.redirect(new URL('/login', request.url))
     }
 
     if (user.user_metadata?.role?.toLowerCase() !== 'admin') {
-      // Tiene sesión pero no es admin → manda a pricing
       return NextResponse.redirect(new URL('/pricing', request.url))
     }
   }
@@ -57,5 +59,5 @@ export async function middleware(request: NextRequest) {
 
 // Solo se ejecuta en estas rutas
 export const config = {
-  matcher: ['/admin/:path*', '/login', '/mis-cargas/:path*', '/mis-cargas'],
+  matcher: ['/admin/:path*', '/nutricion/:path*', '/nutricion', '/login', '/mis-cargas/:path*', '/mis-cargas'],
 }
