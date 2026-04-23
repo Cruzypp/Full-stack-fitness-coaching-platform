@@ -40,9 +40,6 @@ export default function NutricionPage() {
           </Link>
         </div>
         <div className="flex items-center gap-4">
-          <Link href="/admin/dashboard" className="font-label text-[10px] uppercase tracking-[0.15em] text-slate-300 hover:text-slate-500 transition-colors border border-slate-200 rounded-lg px-2 py-1">
-            ← Admin
-          </Link>
           <button onClick={handleLogout} className="font-label text-[10px] uppercase tracking-[0.15em] text-slate-400 hover:text-slate-700 transition-colors">
             Cerrar Sesión
           </button>
