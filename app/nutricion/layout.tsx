@@ -7,7 +7,7 @@ export default function NutricionLayout({ children }: { children: ReactNode }) {
       style={{
         // Override primary to dark green scoped to /nutricion/*
         // Tailwind consumes via hsl(var(--primary))
-        "--primary": "142 72% 29%",           // #15803d — green-700
+        "--primary": "142 65% 42%",           // #1fb159 — lighter vivid green
         "--primary-foreground": "0 0% 100%",  // white text on green
       } as React.CSSProperties}
     >

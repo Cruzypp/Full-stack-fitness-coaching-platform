@@ -70,6 +70,10 @@ export default function AdminDashboardPage() {
           <Link href="/admin/vidas" className="font-label text-[10px] md:text-xs uppercase tracking-[0.15em] text-muted-foreground hover:text-foreground transition-colors">
             Vidas
           </Link>
+          <span className="w-px h-4 bg-border/30 hidden md:block" />
+          <Link href="/nutricion" className="font-label text-[10px] md:text-xs uppercase tracking-[0.15em] text-emerald-400 hover:text-emerald-300 transition-colors">
+            Nutrición →
+          </Link>
           <button
             onClick={handleLogout}
             className="font-label text-[10px] md:text-xs uppercase tracking-[0.15em] text-muted-foreground hover:text-foreground transition-colors ml-2 md:ml-0"
