@@ -26,7 +26,7 @@ const SUMMARY_COLORS = [
   "bg-amber-50 border-amber-200",
 ]
 
-type Profile = { id: string; first_name: string; last_name: string; email: string; phone?: string }
+type Profile = { id: string; first_name: string; last_name: string; email: string; phone?: string; wants_nutrition: boolean; nutrition_reminders_enabled: boolean; lives_lost: number }
 
 const EMPTY_FORM: Partial<Record<string, string>> & { measured_at: string; notes: string } = {
   measured_at: new Date().toISOString().slice(0, 10),
@@ -101,6 +101,20 @@ export default function ClientePage() {
     setMeasurements((prev) => prev.filter((m) => m.id !== id))
   }
 
+  const handleToggleNutrition = async () => {
+    if (!profile) return
+    const newVal = !profile.wants_nutrition
+    const { error } = await supabase.from("profiles").update({ wants_nutrition: newVal }).eq("id", userId)
+    if (!error) setProfile((p) => p ? { ...p, wants_nutrition: newVal } : p)
+  }
+
+  const handleToggleReminders = async () => {
+    if (!profile || !profile.wants_nutrition) return
+    const newVal = !profile.nutrition_reminders_enabled
+    const { error } = await supabase.from("profiles").update({ nutrition_reminders_enabled: newVal }).eq("id", userId)
+    if (!error) setProfile((p) => p ? { ...p, nutrition_reminders_enabled: newVal } : p)
+  }
+
   const handleLogout = async () => { await supabase.auth.signOut(); router.push("/login") }
 
   if (loading) {
@@ -132,10 +146,48 @@ export default function ClientePage() {
             <Link href="/nutricion" className="font-label text-[10px] uppercase tracking-[0.15em] text-slate-400 hover:text-slate-700 transition-colors flex items-center gap-1 mb-2">
               ← Clientes
             </Link>
-            <h1 className="font-bebas text-4xl md:text-5xl tracking-tight text-slate-900">
-              {profile?.first_name} <span className="text-primary">{profile?.last_name}</span>
-            </h1>
+            <div className="flex items-center gap-3 flex-wrap">
+              <h1 className={`font-bebas text-4xl md:text-5xl tracking-tight ${profile && profile.lives_lost >= 3 ? "text-red-400" : "text-slate-900"}`}>
+                {profile?.first_name} <span className={profile && profile.lives_lost >= 3 ? "text-red-300" : "text-primary"}>{profile?.last_name}</span>
+              </h1>
+              {profile && profile.lives_lost >= 3 && (
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-red-100 border border-red-200 font-label text-[9px] uppercase tracking-[0.12em] text-red-500">
+                  ✕ Eliminado del reto
+                </span>
+              )}
+            </div>
             <p className="mt-1 font-body text-sm text-slate-500">{profile?.email}{profile?.phone ? ` · ${profile.phone}` : ""}</p>
+            <div className="mt-2 flex items-center gap-2">
+              <button
+                onClick={handleToggleNutrition}
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-label text-[9px] uppercase tracking-[0.12em] border transition-colors ${
+                  profile?.wants_nutrition
+                    ? "bg-emerald-50 border-emerald-200 text-emerald-600 hover:bg-emerald-100"
+                    : "bg-slate-100 border-slate-200 text-slate-400 hover:bg-slate-200"
+                }`}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full ${profile?.wants_nutrition ? "bg-emerald-500" : "bg-slate-300"}`} />
+                {profile?.wants_nutrition ? "Nutrición activa" : "Sin nutrición"}
+              </button>
+              {profile?.wants_nutrition && (
+                <button
+                  onClick={handleToggleReminders}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-label text-[9px] uppercase tracking-[0.12em] border transition-colors ${
+                    profile.nutrition_reminders_enabled
+                      ? "bg-amber-50 border-amber-200 text-amber-600 hover:bg-amber-100"
+                      : "bg-slate-100 border-slate-200 text-slate-400 hover:bg-slate-200"
+                  }`}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full ${profile.nutrition_reminders_enabled ? "bg-amber-500" : "bg-slate-300"}`} />
+                  {profile.nutrition_reminders_enabled ? "Recordatorios activos" : "Recordatorios pausados"}
+                </button>
+              )}
+              {profile && profile.lives_lost > 0 && profile.lives_lost < 3 && (
+                <span className="font-label text-[9px] uppercase tracking-[0.12em] text-amber-500">
+                  {3 - profile.lives_lost} vida{3 - profile.lives_lost !== 1 ? "s" : ""} restante{3 - profile.lives_lost !== 1 ? "s" : ""}
+                </span>
+              )}
+            </div>
           </div>
           <Link
             href={`/nutricion/clientes/${userId}/plan/${currentMonth}`}

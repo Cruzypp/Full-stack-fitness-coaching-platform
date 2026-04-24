@@ -139,6 +139,15 @@ export async function POST(req: NextRequest) {
       throw new Error(`Python API error ${res.status}: ${detail}`)
     }
 
+    // Sync wants_nutrition flag to profiles so nutrition module can filter correctly
+    if (data.userId) {
+      const supabaseAdmin = getSupabaseAdmin()
+      await supabaseAdmin
+        .from("profiles")
+        .update({ wants_nutrition: wantsNutrition })
+        .eq("id", data.userId)
+    }
+
     return NextResponse.json({ ok: true })
   } catch (error) {
     console.error("Error en /api/sheets:", error)

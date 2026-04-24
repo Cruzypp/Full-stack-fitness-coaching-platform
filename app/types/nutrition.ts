@@ -77,5 +77,8 @@ export interface NutritionClient {
   email: string
   phone?: string
   payment_date?: string
+  wants_nutrition: boolean
+  nutrition_reminders_enabled: boolean
+  lives_lost: number
   latest_measurement?: BodyMeasurement | null
 }

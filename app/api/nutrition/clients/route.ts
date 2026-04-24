@@ -9,7 +9,8 @@ const admin = createClient(
 export async function GET() {
   const { data: profiles, error } = await admin
     .from('profiles')
-    .select('id, first_name, last_name, email, phone, payment_date')
+    .select('id, first_name, last_name, email, phone, payment_date, wants_nutrition, nutrition_reminders_enabled, lives_lost')
+    .eq('wants_nutrition', true)
     .order('first_name')
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })

@@ -228,6 +228,7 @@ export default function PlanPage() {
   const [activeRecipe, setActiveRecipe] = useState<Recipe | null>(null)
   const [editingEntry, setEditingEntry] = useState<MealPlanEntry | null>(null)
   const [clientName, setClientName] = useState("")
+  const [clientPhone, setClientPhone] = useState("")
 
   const daysInMonth = getDaysInMonth(yearMonth)
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
@@ -236,12 +237,15 @@ export default function PlanPage() {
     const load = async () => {
       const [recipesRes, profileRes, planRes] = await Promise.all([
         fetch("/api/nutrition/recipes").then((r) => r.json()),
-        supabase.from("profiles").select("first_name, last_name").eq("id", userId).single(),
+        supabase.from("profiles").select("first_name, last_name, phone").eq("id", userId).single(),
         fetch(`/api/nutrition/meal-plans?userId=${userId}&yearMonth=${yearMonth}`).then((r) => r.json()),
       ])
 
       setRecipes(recipesRes)
-      if (profileRes.data) setClientName(`${profileRes.data.first_name} ${profileRes.data.last_name}`)
+      if (profileRes.data) {
+        setClientName(`${profileRes.data.first_name} ${profileRes.data.last_name}`)
+        setClientPhone(profileRes.data.phone ?? "")
+      }
 
       let currentPlan: MealPlan | null = null
       if (Array.isArray(planRes) && planRes.length > 0) {
@@ -333,6 +337,21 @@ export default function PlanPage() {
   const filteredRecipes = recipeFilter === "todas" ? recipes : recipes.filter((r) => r.category === recipeFilter)
 
   const handleLogout = async () => { await supabase.auth.signOut(); router.push("/login") }
+
+  const handleSendPlan = () => {
+    if (!plan) return
+    const [y, m] = yearMonth.split("-")
+    const label = new Date(Number(y), Number(m) - 1, 1).toLocaleDateString("es-MX", { month: "long", year: "numeric" })
+    window.open(`/api/nutrition/meal-plans/${plan.id}/pdf`, "_blank")
+    if (clientPhone) {
+      const digits = clientPhone.replace(/\D/g, "")
+      const wa = digits.length === 10 ? `52${digits}` : digits
+      const msg = encodeURIComponent(
+        `Hola ${clientName.split(" ")[0]}! Aqui te comparto tu plan nutricional del mes de ${label}. Cualquier duda estoy aqui para ayudarte.`
+      )
+      setTimeout(() => window.open(`https://wa.me/${wa}?text=${msg}`, "_blank"), 300)
+    }
+  }
 
   const macros = useMemo(() => {
     const totals = { calories: 0, protein: 0, carbs: 0, fats: 0, days: new Set<number>() }
@@ -430,7 +449,7 @@ export default function PlanPage() {
                   Doble clic en una entrada para editarla
                 </p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 items-center">
                 <Link href={`/nutricion/clientes/${userId}/plan/${getPrevMonth(yearMonth)}`}
                   className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white font-label text-[9px] uppercase tracking-[0.1em] text-slate-500 hover:text-slate-700 hover:border-slate-300 transition-colors">
                   ← Anterior
@@ -439,6 +458,12 @@ export default function PlanPage() {
                   className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white font-label text-[9px] uppercase tracking-[0.1em] text-slate-500 hover:text-slate-700 hover:border-slate-300 transition-colors">
                   Siguiente →
                 </Link>
+                <button
+                  onClick={handleSendPlan}
+                  className="px-4 py-1.5 rounded-xl bg-primary text-white font-label text-[9px] uppercase tracking-[0.1em] hover:bg-primary/90 transition-colors shadow-sm"
+                >
+                  Enviar plan
+                </button>
               </div>
             </header>
 
