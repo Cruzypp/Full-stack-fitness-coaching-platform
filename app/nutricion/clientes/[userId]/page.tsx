@@ -6,16 +6,16 @@ import { supabase } from "../../../lib/connection"
 import type { BodyMeasurement } from "../../../types/nutrition"
 
 const MEASUREMENT_FIELDS = [
-  { key: "weight_kg", label: "Peso", unit: "kg" },
-  { key: "fat_percentage", label: "% Grasa", unit: "%" },
-  { key: "muscle_mass_kg", label: "Masa Muscular", unit: "kg" },
-  { key: "water_percentage", label: "% Agua", unit: "%" },
-  { key: "visceral_fat", label: "Grasa Visceral", unit: "" },
-  { key: "bone_mass_kg", label: "Masa Ósea", unit: "kg" },
-  { key: "imc", label: "IMC", unit: "" },
-  { key: "waist_cm", label: "Cintura", unit: "cm" },
-  { key: "hip_cm", label: "Cadera", unit: "cm" },
-  { key: "arm_cm", label: "Brazo", unit: "cm" },
+  { key: "weight_kg",       label: "Peso",          unit: "kg", goodDown: true  },
+  { key: "fat_percentage",  label: "% Grasa",        unit: "%",  goodDown: true  },
+  { key: "muscle_mass_kg",  label: "Masa Muscular",  unit: "kg", goodDown: false },
+  { key: "water_percentage",label: "% Agua",         unit: "%",  goodDown: false },
+  { key: "visceral_fat",    label: "Grasa Visceral", unit: "",   goodDown: true  },
+  { key: "bone_mass_kg",    label: "Masa Ósea",      unit: "kg", goodDown: false },
+  { key: "imc",             label: "IMC",            unit: "",   goodDown: true  },
+  { key: "waist_cm",        label: "Cintura",        unit: "cm", goodDown: true  },
+  { key: "hip_cm",          label: "Cadera",         unit: "cm", goodDown: true  },
+  { key: "arm_cm",          label: "Brazo",          unit: "cm", goodDown: false },
 ]
 
 const SUMMARY_COLORS = [
@@ -26,7 +26,7 @@ const SUMMARY_COLORS = [
   "bg-amber-50 border-amber-200",
 ]
 
-type Profile = { id: string; first_name: string; last_name: string; email: string; phone?: string; wants_nutrition: boolean; nutrition_reminders_enabled: boolean; lives_lost: number }
+type Profile = { id: string; first_name: string; last_name: string; email: string; phone?: string; wants_nutrition: boolean; nutrition_reminders_enabled: boolean; lives_lost: number; nutrition_plan_type: string }
 
 const EMPTY_FORM: Partial<Record<string, string>> & { measured_at: string; notes: string } = {
   measured_at: new Date().toISOString().slice(0, 10),
@@ -48,6 +48,15 @@ export default function ClientePage() {
   const [error, setError] = useState("")
 
   const currentMonth = new Date().toISOString().slice(0, 7)
+  const today = new Date().getDate()
+
+  function planHref(): string {
+    const base = `/nutricion/clientes/${userId}/plan/${currentMonth}`
+    if (profile?.nutrition_plan_type === '15d') {
+      return today <= 15 ? `${base}?half=1` : `${base}?half=2`
+    }
+    return base
+  }
 
   useEffect(() => {
     Promise.all([
@@ -111,8 +120,23 @@ export default function ClientePage() {
   const handleToggleReminders = async () => {
     if (!profile || !profile.wants_nutrition) return
     const newVal = !profile.nutrition_reminders_enabled
-    const { error } = await supabase.from("profiles").update({ nutrition_reminders_enabled: newVal }).eq("id", userId)
-    if (!error) setProfile((p) => p ? { ...p, nutrition_reminders_enabled: newVal } : p)
+    const res = await fetch("/api/nutrition/clients/reminders", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId, enabled: newVal }),
+    })
+    if (res.ok) setProfile((p) => p ? { ...p, nutrition_reminders_enabled: newVal } : p)
+  }
+
+  const handleTogglePlanType = async () => {
+    if (!profile) return
+    const newVal = profile.nutrition_plan_type === '15d' ? '30d' : '15d'
+    const res = await fetch(`/api/nutrition/clients/${userId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nutrition_plan_type: newVal }),
+    })
+    if (res.ok) setProfile((p) => p ? { ...p, nutrition_plan_type: newVal } : p)
   }
 
   const handleLogout = async () => { await supabase.auth.signOut(); router.push("/login") }
@@ -182,6 +206,14 @@ export default function ClientePage() {
                   {profile.nutrition_reminders_enabled ? "Recordatorios activos" : "Recordatorios pausados"}
                 </button>
               )}
+              <button
+                onClick={handleTogglePlanType}
+                className="inline-flex items-center gap-1 px-3 py-1 rounded-full font-label text-[9px] uppercase tracking-[0.12em] border transition-colors bg-violet-50 border-violet-200 text-violet-600 hover:bg-violet-100"
+                title="Cambiar tipo de plan"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-violet-500" />
+                Plan {profile?.nutrition_plan_type === '15d' ? '15 días' : '30 días'}
+              </button>
               {profile && profile.lives_lost > 0 && profile.lives_lost < 3 && (
                 <span className="font-label text-[9px] uppercase tracking-[0.12em] text-amber-500">
                   {3 - profile.lives_lost} vida{3 - profile.lives_lost !== 1 ? "s" : ""} restante{3 - profile.lives_lost !== 1 ? "s" : ""}
@@ -190,7 +222,7 @@ export default function ClientePage() {
             </div>
           </div>
           <Link
-            href={`/nutricion/clientes/${userId}/plan/${currentMonth}`}
+            href={planHref()}
             className="px-5 py-2.5 rounded-xl bg-primary text-white font-label text-xs uppercase tracking-[0.15em] hover:bg-primary/90 transition-colors shadow-sm"
           >
             Ver plan {currentMonth}
@@ -202,12 +234,37 @@ export default function ClientePage() {
           <section>
             <h2 className="font-bebas text-2xl tracking-wide text-slate-800 mb-4">ÚLTIMA MEDICIÓN</h2>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-              {MEASUREMENT_FIELDS.slice(0, 5).map(({ key, label, unit }, i) => {
-                const val = (measurements[0] as unknown as Record<string, unknown>)[key]
+              {MEASUREMENT_FIELDS.slice(0, 5).map(({ key, label, unit, goodDown }, i) => {
+                const cur  = (measurements[0] as unknown as Record<string, unknown>)[key] as number | null | undefined
+                const prev = measurements.length > 1
+                  ? (measurements[1] as unknown as Record<string, unknown>)[key] as number | null | undefined
+                  : undefined
+                const delta = cur != null && prev != null ? Math.round((cur - prev) * 10) / 10 : null
+                const increased = delta !== null && delta > 0
+                const decreased = delta !== null && delta < 0
+                const good = (increased && !goodDown) || (decreased && goodDown)
+                const bad  = (increased && goodDown)  || (decreased && !goodDown)
                 return (
                   <div key={key} className={`rounded-xl border p-4 text-center ${SUMMARY_COLORS[i]}`}>
-                    <div className="font-bebas text-2xl text-slate-900">{val != null ? `${val}${unit}` : "—"}</div>
+                    <div className="font-bebas text-2xl text-slate-900">{cur != null ? `${cur}${unit}` : "—"}</div>
                     <div className="font-label text-[9px] uppercase tracking-[0.15em] text-slate-500 mt-0.5">{label}</div>
+                    {/* Trend */}
+                    <div className="mt-1.5 flex items-center justify-center gap-0.5">
+                      {delta === null ? (
+                        <span className="font-label text-[9px] text-slate-300">—</span>
+                      ) : delta === 0 ? (
+                        <span className="font-label text-[9px] text-slate-300">sin cambio</span>
+                      ) : (
+                        <>
+                          <span className={`text-xs leading-none font-bold ${good ? "text-emerald-500" : bad ? "text-red-500" : "text-slate-400"}`}>
+                            {increased ? "↑" : "↓"}
+                          </span>
+                          <span className={`font-label text-[8px] font-bold ${good ? "text-emerald-500" : bad ? "text-red-500" : "text-slate-400"}`}>
+                            {increased ? "+" : ""}{delta}{unit}
+                          </span>
+                        </>
+                      )}
+                    </div>
                   </div>
                 )
               })}

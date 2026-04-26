@@ -26,8 +26,12 @@ export default function NutricionPage() {
   const handleToggleReminders = async (clientId: string, current: boolean) => {
     const newVal = !current
     setClients((prev) => prev.map((c) => c.id === clientId ? { ...c, nutrition_reminders_enabled: newVal } : c))
-    const { error } = await supabase.from("profiles").update({ nutrition_reminders_enabled: newVal }).eq("id", clientId)
-    if (error) setClients((prev) => prev.map((c) => c.id === clientId ? { ...c, nutrition_reminders_enabled: current } : c))
+    const res = await fetch("/api/nutrition/clients/reminders", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: clientId, enabled: newVal }),
+    })
+    if (!res.ok) setClients((prev) => prev.map((c) => c.id === clientId ? { ...c, nutrition_reminders_enabled: current } : c))
   }
 
   return (

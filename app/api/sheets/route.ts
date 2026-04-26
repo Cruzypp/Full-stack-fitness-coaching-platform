@@ -146,6 +146,36 @@ export async function POST(req: NextRequest) {
         .from("profiles")
         .update({ wants_nutrition: wantsNutrition })
         .eq("id", data.userId)
+
+      // Save initial body measurement from onboarding so nutrition view has data from day 1
+      const weightRaw = data.weight ?? data.currentWeight
+      const weightVal = weightRaw ? Number(weightRaw) : null
+      console.log("[sheets] body_measurements insert — isManual:", isManual, "weight:", weightVal, "userId:", data.userId)
+      if (weightVal) {
+        const measurement: Record<string, unknown> = {
+          user_id: data.userId,
+          measured_at: new Date().toISOString().slice(0, 10),
+          weight_kg: weightVal,
+          notes: "Medición inicial — onboarding",
+        }
+        if (isManual) {
+          if (data.waist)     measurement.waist_cm         = Number(data.waist)
+          if (data.hip)       measurement.hip_cm           = Number(data.hip)
+          if (data.arm)       measurement.arm_cm           = Number(data.arm)
+        } else {
+          if (data.imc)                  measurement.imc              = Number(data.imc)
+          if (data.fatPercentage)        measurement.fat_percentage   = Number(data.fatPercentage)
+          if (data.musclePercentage)     measurement.muscle_mass_kg   = Number(data.musclePercentage)
+          if (data.bodyWaterPercentage)  measurement.water_percentage = Number(data.bodyWaterPercentage)
+          if (data.viceralFatPercentage) measurement.visceral_fat     = Number(data.viceralFatPercentage)
+          if (data.boneMass)             measurement.bone_mass_kg     = Number(data.boneMass)
+        }
+        const { error: insertError } = await supabaseAdmin.from("body_measurements").insert(measurement)
+        if (insertError) console.error("[sheets] body_measurements insert failed:", insertError)
+        else console.log("[sheets] body_measurements insert OK")
+      } else {
+        console.warn("[sheets] no weight found in payload — skipping body_measurements insert. data.weight:", data.weight, "data.currentWeight:", data.currentWeight)
+      }
     }
 
     return NextResponse.json({ ok: true })
