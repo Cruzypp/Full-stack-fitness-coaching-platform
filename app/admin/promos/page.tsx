@@ -1,12 +1,9 @@
 "use client"
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { createPromotion, supabase, getActiveStripePriceId, updateActiveStripePriceId } from "../../lib/connection";
 import { createStripeCoupon } from "../../actions/promo";
 
 const AdminPromosPage = () => {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -51,7 +48,7 @@ const AdminPromosPage = () => {
   const activePrice = prices.find(p => p.id === activePriceId) || prices[0];
   const stripePriceAmount = activePrice && activePrice.unit_amount
     ? activePrice.unit_amount / 100
-    : 500; // Default fallback
+    : 500;
 
   const handleSaveActivePrice = async () => {
     try {
@@ -72,11 +69,6 @@ const AdminPromosPage = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push("/login");
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -86,7 +78,6 @@ const AdminPromosPage = () => {
     try {
       const maxRed = formData.maxRedemptions ? Number(formData.maxRedemptions) : undefined;
 
-      // 1. Save to database (Supabase)
       await createPromotion({
         code: formData.code,
         title: formData.title,
@@ -97,7 +88,6 @@ const AdminPromosPage = () => {
         maxRedemptions: maxRed,
       });
 
-      // 2. Generate same coupon in Stripe
       const stripeRes = await createStripeCoupon({
         code: formData.code,
         discountPercent: Number(formData.discountPercent),
@@ -107,7 +97,6 @@ const AdminPromosPage = () => {
       });
 
       if (!stripeRes.success) {
-        // Optionally warn the user that db succeeded but stripe failed
         console.error("Stripe Error:", stripeRes.error);
         setError(`Promo creada en BD, pero falló en Stripe: ${stripeRes.error}`);
         return;
@@ -117,14 +106,7 @@ const AdminPromosPage = () => {
       const baseUrl = window.location.origin;
       setPromoUrl(`${baseUrl}/pricing?promo=${formData.code.toLowerCase()}`);
       setCopied(false);
-      setFormData({
-        code: "",
-        title: "",
-        discountPercent: "",
-        durationHours: "",
-        startsAt: "",
-        maxRedemptions: "",
-      });
+      setFormData({ code: "", title: "", discountPercent: "", durationHours: "", startsAt: "", maxRedemptions: "" });
     } catch (err: any) {
       setError(err.message || "Ocurrió un error al crear la promoción");
     } finally {
@@ -133,275 +115,140 @@ const AdminPromosPage = () => {
   };
 
   return (
-    <div className="min-h-screen noise-bg relative flex flex-col">
-      {/* Ambient glow */}
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
+    <main className="flex-1 flex flex-col items-center px-6 py-10">
+      {/* Header */}
+      <section className="text-center fade-up mb-8 w-full max-w-2xl">
+        <h1 className="font-bebas text-[clamp(2.5rem,6vw,4rem)] leading-[0.95] tracking-tight">
+          NUEVA <span className="text-shimmer">PROMOCIÓN</span>
+        </h1>
+        <p className="mt-4 font-body text-foreground/50 max-w-sm mx-auto text-sm md:text-base leading-relaxed">
+          Crea un nuevo código de descuento para tus clientes.
+        </p>
+      </section>
 
-      {/* Nav */}
-      <nav className="relative z-10 flex flex-col md:flex-row items-center justify-between px-6 md:px-12 py-5 border-b border-border/10 gap-4 md:gap-0">
-        <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-          <span className="font-bebas text-xl md:text-2xl tracking-wide text-foreground">THE ON3 P3RCENT</span>
-        </Link>
-        <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
-          <span className="font-label text-[10px] md:text-xs uppercase tracking-[0.15em] text-primary">
-            Promociones
-          </span>
-          <Link href="/admin/dashboard" className="font-label text-[10px] md:text-xs uppercase tracking-[0.15em] text-muted-foreground hover:text-foreground transition-colors">
-            Dashboard
-          </Link>
-          <Link href="/admin/vidas" className="font-label text-[10px] md:text-xs uppercase tracking-[0.15em] text-muted-foreground hover:text-foreground transition-colors">
-            Vidas
-          </Link>
-          <button
-            onClick={handleLogout}
-            className="font-label text-[10px] md:text-xs uppercase tracking-[0.15em] text-muted-foreground hover:text-foreground transition-colors ml-2 md:ml-0"
-          >
-            Cerrar Sesión
-          </button>
-        </div>
-      </nav>
-
-      <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 py-10">
-
-        {/* Header Text */}
-        <section className="text-center fade-up mb-8">
-          <h1 className="font-bebas text-[clamp(2.5rem,6vw,4rem)] leading-[0.95] tracking-tight">
-            NUEVA <span className="text-shimmer">PROMOCIÓN</span>
-          </h1>
-          <p className="mt-4 font-body text-foreground/50 max-w-sm mx-auto text-sm md:text-base leading-relaxed">
-            Crea un nuevo código de descuento para tus clientes.
+      {/* Product Selector Card */}
+      <section className="w-full fade-up mb-10 max-w-2xl mx-auto" style={{ animationDelay: "0.05s" }}>
+        <div className="glass-card rounded-2xl p-6 md:p-8 border border-border/20 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-[40px] pointer-events-none" />
+          <h2 className="font-bebas text-2xl tracking-wide mb-2 text-foreground">PRODUCTO ACTIVO <span className="text-shimmer">EN VENTA</span></h2>
+          <p className="font-body text-sm text-muted-foreground mb-6">
+            Selecciona qué producto de Stripe se mostrará en la página principal.
           </p>
-        </section>
-
-        {/* Product Selector Card */}
-        <section className="w-full fade-up mb-10 max-w-2xl mx-auto" style={{ animationDelay: "0.05s" }}>
-          <div className="glass-card rounded-2xl p-6 md:p-8 border border-border/20 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-[40px] pointer-events-none" />
-            <h2 className="font-bebas text-2xl tracking-wide mb-2 text-foreground">PRODUCTO ACTIVO <span className="text-shimmer">EN VENTA</span></h2>
-            <p className="font-body text-sm text-muted-foreground mb-6">
-              Selecciona qué producto de Stripe se mostrará en la página principal para que los usuarios puedan comprarlo.
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+            <select
+              className="w-full sm:w-auto flex-1 px-4 py-3 bg-secondary/30 border border-border/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all font-body text-foreground"
+              value={activePriceId}
+              onChange={(e) => setActivePriceId(e.target.value)}
+            >
+              {prices.length === 0 && <option value="">Cargando productos...</option>}
+              {prices.map(price => (
+                <option key={price.id} value={price.id}>
+                  {price.product?.name || price.id} - ${price.unit_amount / 100} {price.currency.toUpperCase()}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={handleSaveActivePrice}
+              disabled={savingPrice || prices.length === 0}
+              className="w-full sm:w-auto px-8 py-3 rounded-xl bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-label text-sm uppercase tracking-[0.2em] font-bold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_-4px_hsl(72_100%_64%/0.4)] active:translate-y-0 disabled:opacity-50 min-w-[180px]"
+              style={{ transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)" }}
+            >
+              {savingPrice ? "GUARDANDO..." : "GUARDAR CAMBIO"}
+            </button>
+          </div>
+          {priceMsg && (
+            <p className={`mt-4 font-body text-sm ${priceMsg.includes("Error") ? "text-destructive" : "text-primary"}`}>
+              {priceMsg}
             </p>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-              <select
-                className="w-full sm:w-auto flex-1 px-4 py-3 bg-secondary/30 border border-border/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all font-body text-foreground"
-                value={activePriceId}
-                onChange={(e) => setActivePriceId(e.target.value)}
-              >
-                {prices.length === 0 && <option value="">Cargando productos...</option>}
-                {prices.map(price => (
-                  <option key={price.id} value={price.id}>
-                    {price.product?.name || price.id} - ${price.unit_amount / 100} {price.currency.toUpperCase()}
-                  </option>
-                ))}
-              </select>
-              <button
-                onClick={handleSaveActivePrice}
-                disabled={savingPrice || prices.length === 0}
-                className="w-full sm:w-auto px-8 py-3 rounded-xl bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-label text-sm uppercase tracking-[0.2em] font-bold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_-4px_hsl(72_100%_64%/0.4)] active:translate-y-0 disabled:opacity-50 min-w-[180px]"
-                style={{ transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)" }}
-              >
-                {savingPrice ? "GUARDANDO..." : "GUARDAR CAMBIO"}
-              </button>
-            </div>
-            {priceMsg && (
-              <p className={`mt-4 font-body text-sm ${priceMsg.includes("Error") ? "text-destructive" : "text-primary"}`}>
-                {priceMsg}
-              </p>
-            )}
-          </div>
-        </section>
+          )}
+        </div>
+      </section>
 
-        {/* Form Card */}
-        <section className="w-full fade-up max-w-2xl mx-auto" style={{ animationDelay: "0.1s" }}>
-          <div className="glass-card rounded-2xl p-6 md:p-10 border border-border/20 focus-within:border-primary/30 hover:border-primary/20 transition-colors duration-500">
+      {/* Form Card */}
+      <section className="w-full fade-up max-w-2xl mx-auto" style={{ animationDelay: "0.1s" }}>
+        <div className="glass-card rounded-2xl p-6 md:p-10 border border-border/20 focus-within:border-primary/30 hover:border-primary/20 transition-colors duration-500">
+          {error && (
+            <div className="mb-6 p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm font-body text-center">{error}</div>
+          )}
+          {success && (
+            <div className="mb-6 p-4 rounded-xl bg-primary/10 border border-primary/20 text-primary text-sm font-body text-center">{success}</div>
+          )}
 
-            {error && (
-              <div className="mb-6 p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm font-body text-center">
-                {error}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="font-label text-xs uppercase tracking-[0.15em] text-muted-foreground ml-1">Código</label>
+                <input type="text" name="code" value={formData.code} onChange={handleChange} required placeholder="EJ: VERANO20"
+                  className="w-full px-4 py-3 bg-secondary/30 border border-border/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all font-body text-foreground placeholder:text-muted-foreground/30 uppercase" />
               </div>
-            )}
-
-            {success && (
-              <div className="mb-6 p-4 rounded-xl bg-primary/10 border border-primary/20 text-primary text-sm font-body text-center">
-                {success}
+              <div className="space-y-2">
+                <label className="font-label text-xs uppercase tracking-[0.15em] text-muted-foreground ml-1">Título</label>
+                <input type="text" name="title" value={formData.title} onChange={handleChange} required placeholder="Promo de Verano"
+                  className="w-full px-4 py-3 bg-secondary/30 border border-border/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all font-body text-foreground placeholder:text-muted-foreground/30" />
               </div>
-            )}
-
-
-            <form onSubmit={handleSubmit} className="space-y-6">
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Code */}
-                <div className="space-y-2">
-                  <label className="font-label text-xs uppercase tracking-[0.15em] text-muted-foreground ml-1">
-                    Código
-                  </label>
-                  <input
-                    type="text"
-                    name="code"
-                    value={formData.code}
-                    onChange={handleChange}
-                    required
-                    placeholder="EJ: VERANO20"
-                    className="w-full px-4 py-3 bg-secondary/30 border border-border/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all font-body text-foreground placeholder:text-muted-foreground/30 uppercase"
-                  />
-                </div>
-
-                {/* Title */}
-                <div className="space-y-2">
-                  <label className="font-label text-xs uppercase tracking-[0.15em] text-muted-foreground ml-1">
-                    Título
-                  </label>
-                  <input
-                    type="text"
-                    name="title"
-                    value={formData.title}
-                    onChange={handleChange}
-                    required
-                    placeholder="Promo de Verano"
-                    className="w-full px-4 py-3 bg-secondary/30 border border-border/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all font-body text-foreground placeholder:text-muted-foreground/30"
-                  />
-                </div>
-
-                {/* Original Price */}
-                <div className="space-y-2">
-                  <label className="font-label text-xs uppercase tracking-[0.15em] text-muted-foreground ml-1">
-                    Precio Regular Detectado ($)
-                  </label>
-                  <div className="w-full px-4 py-3 bg-secondary/10 border border-border/30 rounded-xl font-body text-foreground/50 cursor-not-allowed">
-                    {stripePriceAmount}
-                  </div>
-                </div>
-
-                {/* Discount Factor / Percent */}
-                <div className="space-y-2">
-                  <label className="font-label text-xs uppercase tracking-[0.15em] text-muted-foreground ml-1">
-                    % de Descuento
-                  </label>
-                  <input
-                    type="number"
-                    name="discountPercent"
-                    value={formData.discountPercent}
-                    onChange={handleChange}
-                    required
-                    min="0"
-                    max="100"
-                    step="1"
-                    placeholder="10, 20, etc"
-                    className="w-full px-4 py-3 bg-secondary/30 border border-border/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all font-body text-foreground placeholder:text-muted-foreground/30"
-                  />
-                </div>
-
-                {/* Duration Hours */}
-                <div className="space-y-2">
-                  <label className="font-label text-xs uppercase tracking-[0.15em] text-muted-foreground ml-1">
-                    Duración (Horas)
-                  </label>
-                  <input
-                    type="number"
-                    name="durationHours"
-                    value={formData.durationHours}
-                    onChange={handleChange}
-                    required
-                    min="1"
-                    placeholder="24"
-                    className="w-full px-4 py-3 bg-secondary/30 border border-border/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all font-body text-foreground placeholder:text-muted-foreground/30"
-                  />
-                </div>
-
-                {/* Starts At */}
-                <div className="space-y-2">
-                  <label className="font-label text-xs uppercase tracking-[0.15em] text-muted-foreground ml-1">
-                    Fecha de Inicio
-                  </label>
-                  <input
-                    type="datetime-local"
-                    name="startsAt"
-                    value={formData.startsAt}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 bg-secondary/30 border border-border/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all font-body text-foreground placeholder:text-muted-foreground/30 [color-scheme:dark]"
-                  />
-                </div>
-
-                {/* Max Redemptions */}
-                <div className="space-y-2">
-                  <label className="font-label text-xs uppercase tracking-[0.15em] text-muted-foreground ml-1">
-                    Máx. Usos <span className="normal-case tracking-normal font-body text-muted-foreground/50">(opcional)</span>
-                  </label>
-                  <input
-                    type="number"
-                    name="maxRedemptions"
-                    value={formData.maxRedemptions}
-                    onChange={handleChange}
-                    min="1"
-                    placeholder="Sin límite"
-                    className="w-full px-4 py-3 bg-secondary/30 border border-border/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all font-body text-foreground placeholder:text-muted-foreground/30"
-                  />
-                </div>
+              <div className="space-y-2">
+                <label className="font-label text-xs uppercase tracking-[0.15em] text-muted-foreground ml-1">Precio Regular Detectado ($)</label>
+                <div className="w-full px-4 py-3 bg-secondary/10 border border-border/30 rounded-xl font-body text-foreground/50 cursor-not-allowed">{stripePriceAmount}</div>
               </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="mt-8 w-full py-4 rounded-xl bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-label text-sm uppercase tracking-[0.2em] font-bold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_-4px_hsl(72_100%_64%/0.4)] active:translate-y-0 disabled:opacity-50 disabled:pointer-events-none"
-                style={{ transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)" }}
-              >
-                {loading ? "CREANDO..." : "CREAR PROMOCIÓN"}
-              </button>
-            </form>
-
-          </div>
-        </section>
-
-        {/* Promo URL Card */}
-        {promoUrl && (
-          <section className="w-full fade-up max-w-2xl mx-auto mt-8" style={{ animationDelay: '0.15s' }}>
-            <div className="glass-card rounded-2xl p-6 md:p-8 border border-primary/20 relative overflow-hidden transition-all duration-500 hover:border-primary/40 hover:shadow-[0_0_40px_-10px_hsl(72_100%_64%/0.25)]">
-              <div className="absolute top-0 left-0 w-32 h-32 bg-primary/5 rounded-full blur-[40px] pointer-events-none" />
-              <h2 className="font-bebas text-2xl tracking-wide mb-2 text-foreground">
-                LINK DE <span className="text-shimmer">PROMOCIÓN</span>
-              </h2>
-              <p className="font-body text-sm text-muted-foreground mb-4">
-                Comparte este enlace con tus clientes para que accedan a la oferta.
-              </p>
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                <input
-                  type="text"
-                  readOnly
-                  value={promoUrl}
-                  className="w-full sm:flex-1 px-4 py-3 bg-secondary/30 border border-border/30 rounded-xl font-body text-xs sm:text-sm text-foreground/80 select-all cursor-text truncate"
-                  onClick={(e) => (e.target as HTMLInputElement).select()}
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    navigator.clipboard.writeText(promoUrl);
-                    setCopied(true);
-                    setTimeout(() => setCopied(false), 2000);
-                  }}
-                  className={`w-full sm:w-auto px-5 py-3 rounded-xl font-label text-xs uppercase tracking-[0.15em] transition-all duration-200 min-w-[110px] ${copied
-                    ? 'bg-primary/20 text-primary border border-primary/30'
-                    : 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-bold hover:-translate-y-0.5 hover:shadow-[0_8px_30px_-4px_hsl(72_100%_64%/0.4)]'
-                    }`}
-                  style={{ transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }}
-                >
-                  {copied ? '✓ Copiado' : 'Copiar'}
-                </button>
+              <div className="space-y-2">
+                <label className="font-label text-xs uppercase tracking-[0.15em] text-muted-foreground ml-1">% de Descuento</label>
+                <input type="number" name="discountPercent" value={formData.discountPercent} onChange={handleChange} required min="0" max="100" step="1" placeholder="10, 20, etc"
+                  className="w-full px-4 py-3 bg-secondary/30 border border-border/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all font-body text-foreground placeholder:text-muted-foreground/30" />
+              </div>
+              <div className="space-y-2">
+                <label className="font-label text-xs uppercase tracking-[0.15em] text-muted-foreground ml-1">Duración (Horas)</label>
+                <input type="number" name="durationHours" value={formData.durationHours} onChange={handleChange} required min="1" placeholder="24"
+                  className="w-full px-4 py-3 bg-secondary/30 border border-border/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all font-body text-foreground placeholder:text-muted-foreground/30" />
+              </div>
+              <div className="space-y-2">
+                <label className="font-label text-xs uppercase tracking-[0.15em] text-muted-foreground ml-1">Fecha de Inicio</label>
+                <input type="datetime-local" name="startsAt" value={formData.startsAt} onChange={handleChange} required
+                  className="w-full px-4 py-3 bg-secondary/30 border border-border/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all font-body text-foreground [color-scheme:dark]" />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <label className="font-label text-xs uppercase tracking-[0.15em] text-muted-foreground ml-1">
+                  Máx. Usos <span className="normal-case tracking-normal font-body text-muted-foreground/50">(opcional)</span>
+                </label>
+                <input type="number" name="maxRedemptions" value={formData.maxRedemptions} onChange={handleChange} min="1" placeholder="Sin límite"
+                  className="w-full px-4 py-3 bg-secondary/30 border border-border/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all font-body text-foreground placeholder:text-muted-foreground/30" />
               </div>
             </div>
-          </section>
-        )}
+            <button type="submit" disabled={loading}
+              className="mt-8 w-full py-4 rounded-xl bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-label text-sm uppercase tracking-[0.2em] font-bold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_-4px_hsl(72_100%_64%/0.4)] active:translate-y-0 disabled:opacity-50 disabled:pointer-events-none"
+              style={{ transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)" }}
+            >
+              {loading ? "CREANDO..." : "CREAR PROMOCIÓN"}
+            </button>
+          </form>
+        </div>
+      </section>
 
-      </main>
-
-      {/* Footer */}
-      <footer className="relative z-10 border-t border-border py-6 text-center mt-auto">
-        <span className="font-label text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40">
-          © 2026 ON3 P3RCENT
-        </span>
-      </footer>
-    </div>
+      {/* Promo URL */}
+      {promoUrl && (
+        <section className="w-full fade-up max-w-2xl mx-auto mt-8" style={{ animationDelay: '0.15s' }}>
+          <div className="glass-card rounded-2xl p-6 md:p-8 border border-primary/20 relative overflow-hidden transition-all duration-500 hover:border-primary/40 hover:shadow-[0_0_40px_-10px_hsl(72_100%_64%/0.25)]">
+            <div className="absolute top-0 left-0 w-32 h-32 bg-primary/5 rounded-full blur-[40px] pointer-events-none" />
+            <h2 className="font-bebas text-2xl tracking-wide mb-2 text-foreground">LINK DE <span className="text-shimmer">PROMOCIÓN</span></h2>
+            <p className="font-body text-sm text-muted-foreground mb-4">Comparte este enlace con tus clientes.</p>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <input type="text" readOnly value={promoUrl}
+                className="w-full sm:flex-1 px-4 py-3 bg-secondary/30 border border-border/30 rounded-xl font-body text-xs sm:text-sm text-foreground/80 select-all cursor-text truncate"
+                onClick={(e) => (e.target as HTMLInputElement).select()} />
+              <button type="button"
+                onClick={() => { navigator.clipboard.writeText(promoUrl); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
+                className={`w-full sm:w-auto px-5 py-3 rounded-xl font-label text-xs uppercase tracking-[0.15em] transition-all duration-200 min-w-[110px] ${copied
+                  ? 'bg-primary/20 text-primary border border-primary/30'
+                  : 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-bold hover:-translate-y-0.5 hover:shadow-[0_8px_30px_-4px_hsl(72_100%_64%/0.4)]'
+                  }`}
+                style={{ transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }}
+              >
+                {copied ? '✓ Copiado' : 'Copiar'}
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
+    </main>
   );
 };
 

@@ -51,12 +51,17 @@ function LoginContent() {
       return;
     }
 
+    const { data: { user } } = await supabase.auth.getUser()
+    const role = user?.user_metadata?.role?.toLowerCase()
+
     if (redirectParams) {
-      router.push(redirectParams);
+      router.push(redirectParams)
+    } else if (role === 'nutriologo') {
+      router.push('/nutricion')
     } else {
-      router.push("/admin/promos");
+      router.push('/admin/promos')
     }
-    router.refresh();
+    router.refresh()
   };
 
   return (

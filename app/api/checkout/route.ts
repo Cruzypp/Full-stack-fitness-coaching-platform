@@ -4,7 +4,7 @@ import { stripe } from "../../lib/stripe";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { priceId, couponId, userId } = body;
+    const { priceId, couponId, userId, coachId } = body;
 
     if (!priceId) {
       return NextResponse.json(
@@ -39,10 +39,11 @@ export async function POST(req: NextRequest) {
       line_items: lineItems,
       mode: mode,
       discounts: discounts,
-      client_reference_id: userId, // Attach user ID here
-      // URL to redirect on success
+      client_reference_id: userId,
+      metadata: {
+        ...(coachId ? { coach_id: coachId } : {}),
+      },
       success_url: `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
-      // URL to redirect on cancel
       cancel_url: `${baseUrl}/pricing`,
     });
 

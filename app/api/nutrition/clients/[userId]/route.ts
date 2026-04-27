@@ -13,7 +13,7 @@ export async function PATCH(
   const { userId } = await params
   const body = await req.json()
 
-  const allowed = ['nutrition_plan_type']
+  const allowed = ['nutrition_plan_type', 'nutriologo_id']
   const update: Record<string, unknown> = {}
   for (const key of allowed) {
     if (key in body) update[key] = body[key]

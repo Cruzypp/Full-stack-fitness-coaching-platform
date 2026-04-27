@@ -80,5 +80,13 @@ export interface NutritionClient {
   wants_nutrition: boolean
   nutrition_reminders_enabled: boolean
   lives_lost: number
+  nutriologo_id?: string | null
   latest_measurement?: BodyMeasurement | null
+}
+
+export interface Nutriologo {
+  id: string
+  first_name: string
+  last_name: string
+  email: string
 }

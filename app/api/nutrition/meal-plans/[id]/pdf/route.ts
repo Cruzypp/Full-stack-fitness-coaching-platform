@@ -63,7 +63,7 @@ const s = StyleSheet.create({
     gap: 8,
   },
   dayCard: {
-    width: "48.5%",
+    width: "49%",
     borderWidth: 1,
     borderColor: "#e5e7eb",
     borderRadius: 4,
@@ -94,33 +94,33 @@ const s = StyleSheet.create({
   dayBody: { padding: 6 },
 
   // ── Slot ───────────────────────────────────
-  slotBlock: { marginBottom: 5 },
+  slotBlock: { marginBottom: 8 },
   slotPill: {
     alignSelf: "flex-start",
-    paddingHorizontal: 5,
-    paddingVertical: 1,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
     borderRadius: 3,
-    marginBottom: 2,
+    marginBottom: 4,
   },
   slotLabel: {
-    fontSize: 6,
+    fontSize: 8,
     fontFamily: "Helvetica-Bold",
     letterSpacing: 1,
     textTransform: "uppercase",
   },
-  entryName: { fontSize: 8, color: "#1f2937", fontFamily: "Helvetica-Bold", marginBottom: 1 },
-  macroRow: { flexDirection: "row", gap: 6, marginBottom: 1 },
-  macroKcal:  { fontSize: 6, color: "#ca8a04", fontFamily: "Helvetica-Bold" },  // amarillo
-  macroP:     { fontSize: 6, color: "#16a34a", fontFamily: "Helvetica-Bold" },  // verde
-  macroC:     { fontSize: 6, color: "#7c3aed", fontFamily: "Helvetica-Bold" },  // púrpura
-  macroG:     { fontSize: 6, color: "#0891b2", fontFamily: "Helvetica-Bold" },  // celeste
+  entryName: { fontSize: 11, color: "#1f2937", fontFamily: "Helvetica-Bold", marginBottom: 2 },
+  macroRow: { flexDirection: "row", gap: 8, marginBottom: 2 },
+  macroKcal:  { fontSize: 9, color: "#ca8a04", fontFamily: "Helvetica-Bold" },  // amarillo
+  macroP:     { fontSize: 9, color: "#16a34a", fontFamily: "Helvetica-Bold" },  // verde
+  macroC:     { fontSize: 9, color: "#7c3aed", fontFamily: "Helvetica-Bold" },  // púrpura
+  macroG:     { fontSize: 9, color: "#0891b2", fontFamily: "Helvetica-Bold" },  // celeste
   ingredients: {
-    fontSize: 6,
+    fontSize: 8,
     color: "#9ca3af",
     fontStyle: "italic",
-    lineHeight: 1.4,
+    lineHeight: 1.5,
   },
-  divider: { borderTopWidth: 1, borderTopColor: "#f3f4f6", marginVertical: 4 },
+  divider: { borderTopWidth: 1, borderTopColor: "#f3f4f6", marginVertical: 6 },
 
   // ── Footer ─────────────────────────────────
   footer: {
@@ -154,8 +154,8 @@ function dayTotal(entries: Entry[]): number {
   return entries.reduce((sum, e) => sum + (e.calories ?? 0), 0)
 }
 
-function MealPlanDocument({ clientName, yearMonth, entries }: {
-  clientName: string; yearMonth: string; entries: Entry[]
+function MealPlanDocument({ clientName, nutriologoName, yearMonth, entries }: {
+  clientName: string; nutriologoName: string; yearMonth: string; entries: Entry[]
 }) {
   const [year, month] = yearMonth.split("-")
   const monthLabel = new Date(Number(year), Number(month) - 1, 1)
@@ -169,107 +169,119 @@ function MealPlanDocument({ clientName, yearMonth, entries }: {
   const days = Object.keys(byDay).map(Number).sort((a, b) => a - b)
   const today = new Date().toLocaleDateString("es-MX", { day: "numeric", month: "long", year: "numeric" })
 
+  // Pares de días — 2 por hoja
+  const chunks: number[][] = []
+  for (let i = 0; i < days.length; i += 2) {
+    chunks.push(days.slice(i, i + 2))
+  }
+
   return React.createElement(
     Document,
     { title: `Plan Nutricional — ${clientName} — ${monthLabel}` },
-    React.createElement(
-      Page,
-      { size: "LETTER", style: s.page },
-
-      // ── Header ──────────────────────────────
+    ...chunks.map((chunk, pageIdx) =>
       React.createElement(
-        View, { style: s.header },
-        React.createElement(Text, { style: s.gymName }, "THE ON3 P3RCENT"),
-        React.createElement(Text, { style: s.planTitle }, "Plan Nutricional"),
-        React.createElement(
-          View, { style: s.clientRow },
-          React.createElement(View, null,
-            React.createElement(Text, { style: s.clientLabel }, "Atleta"),
-            React.createElement(Text, { style: s.clientValue }, clientName)
-          ),
-          React.createElement(View, null,
-            React.createElement(Text, { style: s.clientLabel }, "Mes"),
-            React.createElement(Text, { style: s.clientValue }, monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1))
-          ),
-          React.createElement(View, null,
-            React.createElement(Text, { style: s.clientLabel }, "Generado"),
-            React.createElement(Text, { style: s.clientValue }, today)
-          ),
-        )
-      ),
+        Page,
+        { key: `page-${pageIdx}`, size: "LETTER", orientation: "landscape", style: s.page },
 
-      // ── Day grid ────────────────────────────
-      React.createElement(
-        View, { style: s.grid },
-        ...days.map((day) => {
-          const dayEntries = byDay[day]
-          const kcal = dayTotal(dayEntries)
-          const slotsSorted = SLOT_ORDER.filter((sl) => dayEntries.some((e) => e.meal_slot === sl))
-
-          return React.createElement(
-            View, { key: `day-${day}`, style: s.dayCard, wrap: false },
-
-            // Day header
-            React.createElement(
-              View, { style: s.dayHeader },
-              React.createElement(Text, { style: s.dayNumber }, `DÍA ${day}`),
-              kcal > 0
-                ? React.createElement(Text, { style: s.dayKcal }, `${kcal.toLocaleString("es-MX")} kcal`)
-                : null
-            ),
-
-            // Slots
-            React.createElement(
-              View, { style: s.dayBody },
-              ...slotsSorted.map((slot, si) => {
-                const cfg = SLOT_CONFIG[slot] ?? { label: slot, color: "#6b7280", bg: "#f9fafb" }
-                const slotEntries = dayEntries.filter((e) => e.meal_slot === slot)
-                return React.createElement(
-                  View, { key: `slot-${slot}` },
-                  si > 0 ? React.createElement(View, { style: s.divider }) : null,
-                  React.createElement(
-                    View, { style: s.slotBlock },
-                    // Slot pill
-                    React.createElement(
-                      View, { style: { ...s.slotPill, backgroundColor: cfg.bg } },
-                      React.createElement(Text, { style: { ...s.slotLabel, color: cfg.color } }, cfg.label)
-                    ),
-                    // Entries
-                    ...slotEntries.map((entry) => {
-                      const hasMacros = entry.calories || entry.protein_g || entry.carbs_g || entry.fats_g
-                      const ingStr = entry.ingredients?.length
-                        ? entry.ingredients.map((i) => `${i.name}${i.amount ? ` ${i.amount}${i.unit}` : ""}`).join(" · ")
-                        : ""
-                      return React.createElement(
-                        View, { key: entry.id },
-                        React.createElement(Text, { style: s.entryName }, entry.name),
-                        hasMacros
-                          ? React.createElement(
-                              View, { style: s.macroRow },
-                              entry.calories   ? React.createElement(Text, { style: s.macroKcal }, `${entry.calories} kcal`) : null,
-                              entry.protein_g  ? React.createElement(Text, { style: s.macroP   }, `P ${entry.protein_g}g`) : null,
-                              entry.carbs_g    ? React.createElement(Text, { style: s.macroC   }, `C ${entry.carbs_g}g`) : null,
-                              entry.fats_g     ? React.createElement(Text, { style: s.macroG   }, `G ${entry.fats_g}g`) : null,
-                            )
-                          : null,
-                        ingStr ? React.createElement(Text, { style: s.ingredients }, ingStr) : null
-                      )
-                    })
-                  )
-                )
-              })
+        // ── Header (solo primera hoja) ───────────────
+        pageIdx === 0
+          ? React.createElement(
+              View, { style: s.header },
+              React.createElement(Text, { style: s.gymName }, "THE ON3 P3RCENT"),
+              React.createElement(Text, { style: s.planTitle }, "Plan Nutricional"),
+              React.createElement(
+                View, { style: s.clientRow },
+                React.createElement(View, null,
+                  React.createElement(Text, { style: s.clientLabel }, "Atleta"),
+                  React.createElement(Text, { style: s.clientValue }, clientName)
+                ),
+                React.createElement(View, null,
+                  React.createElement(Text, { style: s.clientLabel }, "Mes"),
+                  React.createElement(Text, { style: s.clientValue }, monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1))
+                ),
+                nutriologoName
+                  ? React.createElement(View, null,
+                      React.createElement(Text, { style: s.clientLabel }, "Nutriólogo"),
+                      React.createElement(Text, { style: s.clientValue }, nutriologoName)
+                    )
+                  : null,
+                React.createElement(View, null,
+                  React.createElement(Text, { style: s.clientLabel }, "Generado"),
+                  React.createElement(Text, { style: s.clientValue }, today)
+                ),
+              )
             )
-          )
-        })
-      ),
+          : null,
 
-      // ── Footer ──────────────────────────────
-      React.createElement(
-        View, { style: s.footer, fixed: true },
-        React.createElement(Text, { style: s.footerText }, "THE ON3 P3RCENT — CONFIDENCIAL"),
+        // ── 2 días por hoja ──────────────────────────
         React.createElement(
-          Text,
-          { style: s.pageNum, render: ({ pageNumber, totalPages }: { pageNumber: number; totalPages: number }) => `${pageNumber} / ${totalPages}` }
+          View, { style: s.grid },
+          ...chunk.map((day) => {
+            const dayEntries = byDay[day]
+            const kcal = dayTotal(dayEntries)
+            const slotsSorted = SLOT_ORDER.filter((sl) => dayEntries.some((e) => e.meal_slot === sl))
+
+            return React.createElement(
+              View, { key: `day-${day}`, style: s.dayCard, wrap: false },
+
+              React.createElement(
+                View, { style: s.dayHeader },
+                React.createElement(Text, { style: s.dayNumber }, `DÍA ${day}`),
+                kcal > 0
+                  ? React.createElement(Text, { style: s.dayKcal }, `${kcal.toLocaleString("es-MX")} kcal`)
+                  : null
+              ),
+
+              React.createElement(
+                View, { style: s.dayBody },
+                ...slotsSorted.map((slot, si) => {
+                  const cfg = SLOT_CONFIG[slot] ?? { label: slot, color: "#6b7280", bg: "#f9fafb" }
+                  const slotEntries = dayEntries.filter((e) => e.meal_slot === slot)
+                  return React.createElement(
+                    View, { key: `slot-${slot}` },
+                    si > 0 ? React.createElement(View, { style: s.divider }) : null,
+                    React.createElement(
+                      View, { style: s.slotBlock },
+                      React.createElement(
+                        View, { style: { ...s.slotPill, backgroundColor: cfg.bg } },
+                        React.createElement(Text, { style: { ...s.slotLabel, color: cfg.color } }, cfg.label)
+                      ),
+                      ...slotEntries.map((entry) => {
+                        const hasMacros = entry.calories || entry.protein_g || entry.carbs_g || entry.fats_g
+                        const ingStr = entry.ingredients?.length
+                          ? entry.ingredients.map((i) => `${i.name}${i.amount ? ` ${i.amount}${i.unit}` : ""}`).join(" · ")
+                          : ""
+                        return React.createElement(
+                          View, { key: entry.id },
+                          React.createElement(Text, { style: s.entryName }, entry.name),
+                          hasMacros
+                            ? React.createElement(
+                                View, { style: s.macroRow },
+                                entry.calories   ? React.createElement(Text, { style: s.macroKcal }, `${entry.calories} kcal`) : null,
+                                entry.protein_g  ? React.createElement(Text, { style: s.macroP   }, `P ${entry.protein_g}g`) : null,
+                                entry.carbs_g    ? React.createElement(Text, { style: s.macroC   }, `C ${entry.carbs_g}g`) : null,
+                                entry.fats_g     ? React.createElement(Text, { style: s.macroG   }, `G ${entry.fats_g}g`) : null,
+                              )
+                            : null,
+                          ingStr ? React.createElement(Text, { style: s.ingredients }, ingStr) : null
+                        )
+                      })
+                    )
+                  )
+                })
+              )
+            )
+          })
+        ),
+
+        // ── Footer ──────────────────────────────────
+        React.createElement(
+          View, { style: s.footer, fixed: true },
+          React.createElement(Text, { style: s.footerText }, "THE ON3 P3RCENT — CONFIDENCIAL"),
+          React.createElement(
+            Text,
+            { style: s.pageNum, render: ({ pageNumber, totalPages }: { pageNumber: number; totalPages: number }) => `${pageNumber} / ${totalPages}` }
+          )
         )
       )
     )
@@ -293,16 +305,27 @@ export async function GET(
 
   const plan = planRes.data
   const profileRes = await supabase
-    .from("profiles").select("first_name, last_name").eq("id", plan.user_id).single()
+    .from("profiles").select("first_name, last_name, nutriologo_id").eq("id", plan.user_id).single()
 
   const clientName = profileRes.data
     ? `${profileRes.data.first_name} ${profileRes.data.last_name}`
     : "Cliente"
 
+  // Fetch nutritionist name if assigned
+  let nutriologoName = ""
+  const nutriologoId = profileRes.data?.nutriologo_id
+  if (nutriologoId) {
+    const { data: nutUser } = await supabase.auth.admin.getUserById(nutriologoId)
+    if (nutUser?.user) {
+      const m = nutUser.user.user_metadata
+      nutriologoName = `${m?.first_name ?? ""} ${m?.last_name ?? ""}`.trim()
+    }
+  }
+
   const entries: Entry[] = Array.isArray(entriesRes.data) ? entriesRes.data : []
 
   const buffer = await renderToBuffer(
-    React.createElement(MealPlanDocument, { clientName, yearMonth: plan.year_month, entries }) as React.ReactElement<DocumentProps>
+    React.createElement(MealPlanDocument, { clientName, nutriologoName, yearMonth: plan.year_month, entries }) as React.ReactElement<DocumentProps>
   )
 
   const monthSlug = plan.year_month.replace("-", "_")

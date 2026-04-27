@@ -40,10 +40,16 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ success: true, first_name: null });
     }
 
-    // Update the user's payment_date in Supabase and retrieve their first name
+    // Read coach_id from session metadata if present
+    const coachId = session.metadata?.coach_id ?? null
+
+    // Update payment_date and coach_id in one shot
+    const updatePayload: Record<string, unknown> = { payment_date: new Date().toISOString() }
+    if (coachId) updatePayload.coach_id = coachId
+
     const { data: profileData, error } = await supabaseAdmin
       .from("profiles")
-      .update({ payment_date: new Date().toISOString() })
+      .update(updatePayload)
       .eq("id", userId)
       .select("first_name")
       .single();

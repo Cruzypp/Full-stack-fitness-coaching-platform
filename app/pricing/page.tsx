@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, Suspense, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { usePromo } from '@/app/hooks/usePromo'
 import { CountdownTimer } from '@/app/components/CountdownTime'
 import Link from 'next/link'
@@ -13,6 +13,8 @@ import BottomNav from '@/components/BottomNav'
 
 function PricingContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const coachId = searchParams.get("coach")
   const { user, loading: authLoading, signOut } = useAuthStore();
   const [prices, setPrices] = useState<any[]>([]);
   const [activePriceId, setActivePriceId] = useState<string | null>(null);
@@ -94,9 +96,9 @@ function PricingContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           priceId,
-          // Apply promo code if exists. Assumes promo.code matches the Coupon ID in Stripe
           couponId: hasPromo ? promo.code : undefined,
-          userId: user?.id
+          userId: user?.id,
+          coachId: coachId ?? undefined,
         }),
       });
       const data = await res.json();

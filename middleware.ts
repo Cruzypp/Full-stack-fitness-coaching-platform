@@ -27,17 +27,26 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  // ── Proteger /admin/* y /nutricion/* ─────────────────
-  const isProtectedAdmin =
-    request.nextUrl.pathname.startsWith('/admin') ||
-    request.nextUrl.pathname.startsWith('/nutricion')
-
-  if (isProtectedAdmin) {
+  // ── Proteger /admin/* ────────────────────────────────
+  if (request.nextUrl.pathname.startsWith('/admin')) {
     if (!user) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
-
     if (user.user_metadata?.role?.toLowerCase() !== 'admin') {
+      return NextResponse.redirect(new URL('/pricing', request.url))
+    }
+  }
+
+  // ── Proteger /nutricion/* (excepto signup) ────────────
+  if (
+    request.nextUrl.pathname.startsWith('/nutricion') &&
+    request.nextUrl.pathname !== '/nutricion/signup'
+  ) {
+    if (!user) {
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
+    const role = user.user_metadata?.role?.toLowerCase()
+    if (role !== 'admin' && role !== 'nutriologo') {
       return NextResponse.redirect(new URL('/pricing', request.url))
     }
   }
@@ -49,9 +58,11 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // ── Si ya tiene sesión y va a /login → manda a admin ──
+  // ── Si ya tiene sesión y va a /login → redirige según rol ──
   if (user && request.nextUrl.pathname === '/login') {
-    return NextResponse.redirect(new URL('/admin/promos', request.url))
+    const role = user.user_metadata?.role?.toLowerCase()
+    const dest = role === 'nutriologo' ? '/nutricion' : '/admin/promos'
+    return NextResponse.redirect(new URL(dest, request.url))
   }
 
   return supabaseResponse
@@ -59,5 +70,12 @@ export async function middleware(request: NextRequest) {
 
 // Solo se ejecuta en estas rutas
 export const config = {
-  matcher: ['/admin/:path*', '/nutricion/:path*', '/nutricion', '/login', '/mis-cargas/:path*', '/mis-cargas'],
+  matcher: [
+    '/admin/:path*',
+    '/nutricion',
+    '/nutricion/:path*',
+    '/login',
+    '/mis-cargas',
+    '/mis-cargas/:path*',
+  ],
 }
