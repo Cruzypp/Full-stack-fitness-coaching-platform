@@ -125,7 +125,7 @@ function PricingContent() {
       <nav ref={navRef} className="relative z-10 flex items-center justify-between px-6 md:px-12 py-5">
         <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
           <span className="font-bebas text-xl tracking-wide text-foreground">
-            THE ON3 P3RCENT
+            APEX COACHING
           </span>
         </Link>
         <div className="flex items-center gap-4">
@@ -290,7 +290,7 @@ function PricingContent() {
       {/* Footer */}
       <footer className="relative z-10 border-t border-border py-6 pb-24 md:pb-6 text-center mt-auto">
         <span className="font-label text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40">
-          © 2026 ON3 P3RCENT
+          © 2026 APEX COACHING
         </span>
       </footer>
     </div>

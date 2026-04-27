@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
 }
 
 async function sendToSheets(measurement: Record<string, unknown>) {
-  await fetch('https://pythonactions.cruzdomain.cloud/body_measurements', {
+  await fetch(`${process.env.PYTHON_API_BASE_URL}/body_measurements`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(measurement),

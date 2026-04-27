@@ -57,7 +57,7 @@ export default function AdminSidebar() {
             href="/"
             className="font-bebas text-lg tracking-wide text-foreground hover:text-primary transition-colors"
           >
-            THE ON3 P3RCENT
+            APEX COACHING
           </Link>
           <p className="font-label text-[8px] uppercase tracking-[0.25em] text-muted-foreground/40 mt-1 flex items-center gap-1">
             <Zap size={8} />

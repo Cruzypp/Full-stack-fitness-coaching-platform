@@ -42,7 +42,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "The On3 P3rcent",
+  title: "Apex Coaching",
   description: "Se parte del 1% ahora.",
 };
 

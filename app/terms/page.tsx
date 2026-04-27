@@ -4,9 +4,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Términos y Condiciones | The On3 P3rcent",
+  title: "Términos y Condiciones | Apex Coaching",
   description:
-    "Términos y Condiciones de uso de la plataforma The On3 P3rcent. Lee nuestras políticas antes de usar el servicio.",
+    "Términos y Condiciones de uso de la plataforma Apex Coaching. Lee nuestras políticas antes de usar el servicio.",
 };
 
 interface Subsection {
@@ -44,7 +44,7 @@ const sections: Section[] = [
     title: "Responsabilidad y exención médica",
     bullets: [
       "El participante (o su tutor legal) acepta que participa voluntariamente y bajo su propia responsabilidad, independientemente de su estado de salud.",
-      "ON3P3RCENT, sus coaches, organizadores y colaboradores no se hacen responsables por lesiones, recaídas, accidentes, daños físicos, emocionales o complicaciones de salud derivadas de la participación.",
+      "APEXCOACHING, sus coaches, organizadores y colaboradores no se hacen responsables por lesiones, recaídas, accidentes, daños físicos, emocionales o complicaciones de salud derivadas de la participación.",
       "La asesoría brindada no sustituye atención médica, fisioterapéutica o nutricional profesional.",
     ],
   },
@@ -166,7 +166,7 @@ const sections: Section[] = [
     number: "08",
     title: "Uso de imagen, fotos y videos (consentimiento)",
     content: [
-      "El participante (o su tutor legal) autoriza expresa, libre y gratuitamente a ON3P3RCENT a utilizar:"
+      "El participante (o su tutor legal) autoriza expresa, libre y gratuitamente a APEXCOACHING a utilizar:"
     ],
     bullets: [
       "Fotografías",
@@ -218,7 +218,7 @@ const sections: Section[] = [
     title: "Conducta y acceso",
     bullets: [
       "El acceso al reto es personal e intransferible.",
-      "ON3P3RCENT podrá remover o expulsar a cualquier participante que:",
+      "APEXCOACHING podrá remover o expulsar a cualquier participante que:",
       "• Incumpla las reglas",
       "• Falte al respeto",
       "• Comparta contenido del programa",
@@ -233,7 +233,7 @@ const sections: Section[] = [
     number: "12",
     title: "Fuerza mayor",
     content: [
-      "ON3P3RCENT no será responsable por incumplimientos derivados de situaciones de fuerza mayor, incluyendo pero no limitándose a:"
+      "APEXCOACHING no será responsable por incumplimientos derivados de situaciones de fuerza mayor, incluyendo pero no limitándose a:"
     ],
     bullets: [
       "Fallas de plataforma",
@@ -252,7 +252,7 @@ const sections: Section[] = [
     number: "13",
     title: "Modificaciones",
     content: [
-      "ON3P3RCENT se reserva el derecho de modificar estos términos y condiciones en cualquier momento para mejorar la operación del reto.",
+      "APEXCOACHING se reserva el derecho de modificar estos términos y condiciones en cualquier momento para mejorar la operación del reto.",
       "Cualquier cambio será comunicado a los participantes."
     ],
   },
@@ -282,7 +282,7 @@ export default function TerminosPage() {
       {/* Header */}
       <header className="border-b border-white/10 px-6 py-5 flex items-center justify-between sticky top-0 bg-[#050505]/90 backdrop-blur-sm z-10">
         <a href="/" className="flex items-center gap-2 group">
-          <span className="text-white/40 text-xs font-mono mt-1">THE ON3 P3RCENT</span>
+          <span className="text-white/40 text-xs font-mono mt-1">APEX COACHING</span>
         </a>
         <span className="text-white/30 text-xs font-mono">
           LEGAL / TÉRMINOS
@@ -308,9 +308,9 @@ export default function TerminosPage() {
 
         {/* Intro callout */}
         <div className="border border-[#E8FF47]/20 bg-[#E8FF47]/5 rounded-lg p-5 mb-16">
-          <p className="text-[#E8FF47] font-bold mb-2">Reto ON3P3RCENT</p>
+          <p className="text-[#E8FF47] font-bold mb-2">Reto APEXCOACHING</p>
           <p className="text-white/70 text-sm leading-relaxed">
-            Al inscribirse, realizar el pago y/o participar en el Reto ON3P3RCENT, el participante acepta de manera expresa los siguientes términos y condiciones.
+            Al inscribirse, realizar el pago y/o participar en el Reto APEXCOACHING, el participante acepta de manera expresa los siguientes términos y condiciones.
           </p>
         </div>
 
@@ -410,7 +410,7 @@ export default function TerminosPage() {
         {/* Footer */}
         <div className="border-t border-white/10 pt-10 mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <p className="text-white/20 text-xs font-mono">
-            © 2026 The On3 P3rcent. Todos los derechos reservados.
+            © 2026 Apex Coaching. Todos los derechos reservados.
           </p>
           <a
             href="mailto:oviverossecin@gmail.com"

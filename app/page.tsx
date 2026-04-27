@@ -34,7 +34,7 @@ export default function Home() {
       {/* Nav */}
       <nav ref={navRef} className="relative z-10 flex items-center justify-between px-6 md:px-12 py-5">
         <div className="flex items-center gap-3">
-          <span className="font-bebas text-xl tracking-wide text-foreground">THE ON3 P3RCENT</span>
+          <span className="font-bebas text-xl tracking-wide text-foreground">APEX COACHING</span>
         </div>
 
         <div className="flex items-center gap-4">
@@ -64,7 +64,7 @@ export default function Home() {
             Bienvenido al inicio
           </p>
           <h1 ref={titleRef} className="font-bebas text-[clamp(3.5rem,10vw,8rem)] leading-[0.9] tracking-tight">
-            THE <span className="text-shimmer">ON3</span> P3RCENT
+            APEX <span className="text-shimmer">COACHING</span>
           </h1>
           <p ref={bodyRef} className="mt-8 font-body text-foreground/50 max-w-lg mx-auto text-sm md:text-base leading-relaxed">
             Forma parte de la élite. Únete al programa, transforma tu mente y cuerpo con el mejor coaching.
@@ -94,7 +94,7 @@ export default function Home() {
       {/* Footer */}
       <footer ref={footerRef} className="relative z-10 border-t border-border py-6 text-center mt-auto">
         <span className="font-label text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40">
-          © 2026 ON3 P3RCENT
+          © 2026 APEX COACHING
         </span>
       </footer>
     </div>

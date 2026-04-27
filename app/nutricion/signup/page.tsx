@@ -127,7 +127,7 @@ function NutricionSignupContent() {
       {/* Nav */}
       <nav className="bg-white border-b border-slate-200 px-6 md:px-12 py-4 flex items-center justify-between">
         <Link href="/" className="font-bebas text-xl tracking-wide text-slate-900 hover:text-primary transition-colors">
-          THE ON3 P3RCENT
+          APEX COACHING
         </Link>
         <Link href="/login" className="font-label text-[10px] uppercase tracking-[0.15em] text-slate-500 hover:text-slate-900 transition-colors">
           Iniciar Sesión
@@ -293,7 +293,7 @@ function NutricionSignupContent() {
 
       <footer className="border-t border-slate-200 py-5 text-center bg-white">
         <span className="font-label text-[10px] uppercase tracking-[0.15em] text-slate-400">
-          © 2026 ON3 P3RCENT · NUTRICIÓN
+          © 2026 APEX COACHING · NUTRICIÓN
         </span>
       </footer>
     </div>

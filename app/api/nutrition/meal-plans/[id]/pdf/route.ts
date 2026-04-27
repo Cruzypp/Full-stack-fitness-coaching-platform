@@ -187,7 +187,7 @@ function MealPlanDocument({ clientName, nutriologoName, yearMonth, entries }: {
         pageIdx === 0
           ? React.createElement(
               View, { style: s.header },
-              React.createElement(Text, { style: s.gymName }, "THE ON3 P3RCENT"),
+              React.createElement(Text, { style: s.gymName }, "APEX COACHING"),
               React.createElement(Text, { style: s.planTitle }, "Plan Nutricional"),
               React.createElement(
                 View, { style: s.clientRow },
@@ -277,7 +277,7 @@ function MealPlanDocument({ clientName, nutriologoName, yearMonth, entries }: {
         // ── Footer ──────────────────────────────────
         React.createElement(
           View, { style: s.footer, fixed: true },
-          React.createElement(Text, { style: s.footerText }, "THE ON3 P3RCENT — CONFIDENCIAL"),
+          React.createElement(Text, { style: s.footerText }, "APEX COACHING — CONFIDENCIAL"),
           React.createElement(
             Text,
             { style: s.pageNum, render: ({ pageNumber, totalPages }: { pageNumber: number; totalPages: number }) => `${pageNumber} / ${totalPages}` }

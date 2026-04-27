@@ -39,8 +39,8 @@ function SuccessContent() {
   }, [sessionId])
 
   // Coach WhatsApp configuration
-  const COACH_PHONE = "528180272994"
-  const waMessage = encodeURIComponent(`¡Hola Coach! Soy ${userName || 'un nuevo alumno'}, acabo de unirme al programa THE ON3 P3RCENT.`)
+  const COACH_PHONE = process.env.NEXT_PUBLIC_COACH_WHATSAPP ?? ""
+  const waMessage = encodeURIComponent(`¡Hola Coach! Soy ${userName || 'un nuevo alumno'}, acabo de unirme al programa Apex Coaching.`)
   const whatsappUrl = `https://wa.me/${COACH_PHONE}?text=${waMessage}`
 
   return (

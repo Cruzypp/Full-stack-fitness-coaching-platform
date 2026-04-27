@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const LIVES_API_URL = "https://pythonactions.cruzdomain.cloud/admin/set-lives";
+const LIVES_API_URL = `${process.env.PYTHON_API_BASE_URL}/admin/set-lives`;
 
 export async function POST(req: NextRequest) {
   try {

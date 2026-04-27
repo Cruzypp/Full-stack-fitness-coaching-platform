@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { tr, trItems } from "@/app/lib/translations"
 import { getSupabaseAdmin } from "@/lib/supabase-admin"
 
-const PYTHON_API_URL = "https://pythonactions.cruzdomain.cloud/onboarding"
+const PYTHON_API_URL = `${process.env.PYTHON_API_BASE_URL}/onboarding`
 
 // ── Utilidades de formato ───────────────────────────────────────────────────
 

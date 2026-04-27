@@ -319,7 +319,7 @@ export default function RecetasPage() {
       </main>
 
       <footer className="border-t border-slate-200 py-5 text-center bg-white">
-        <span className="font-label text-[10px] uppercase tracking-[0.15em] text-slate-400">© 2026 ON3 P3RCENT · NUTRICIÓN</span>
+        <span className="font-label text-[10px] uppercase tracking-[0.15em] text-slate-400">© 2026 APEX COACHING · NUTRICIÓN</span>
       </footer>
 
       {/* ── Confirm Delete Modal ───────────────────────────── */}

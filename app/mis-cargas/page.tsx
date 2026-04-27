@@ -86,7 +86,7 @@ export default function MisCargas() {
       {/* Desktop nav */}
       <nav className="hidden md:flex items-center justify-between px-6 md:px-12 py-5 border-b border-border">
         <Link href="/pricing" className="font-bebas text-xl tracking-wide text-foreground hover:opacity-80 transition-opacity">
-          THE ON3 P3RCENT
+          APEX COACHING
         </Link>
         <div className="flex items-center gap-4">
           <Link href="/mis-cargas" className="font-label text-xs uppercase tracking-[0.15em] text-foreground">

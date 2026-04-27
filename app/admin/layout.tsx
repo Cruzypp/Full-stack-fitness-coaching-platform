@@ -14,7 +14,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         {children}
         <footer className="border-t border-border/10 py-5 text-center mt-auto">
           <span className="font-label text-[10px] uppercase tracking-[0.15em] text-muted-foreground/30">
-            © 2026 ON3 P3RCENT
+            © 2026 APEX COACHING
           </span>
         </footer>
       </div>
